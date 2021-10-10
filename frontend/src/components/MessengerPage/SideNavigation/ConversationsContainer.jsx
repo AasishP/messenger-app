@@ -45,12 +45,15 @@ function ConversationsContainer() {
     <div
       style={{
         width: "100%",
+        marginTop: "0.5em",
         overflowY: "scroll",
+        overflowX: "hidden",
       }}
     >
       {conversations.map((conversation) => (
         <Conversation key={conversation._id} conversation={conversation} />
       ))}
+
     </div>
   );
 }

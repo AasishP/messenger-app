@@ -5,14 +5,13 @@ import {
   withStyles,
   Typography,
   ButtonBase,
-  makeStyles,
 } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
 import moment from "moment";
 import React, { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import axios from "../../../api";
 import SocketContext from "../../../context/SocketContext";
+import theme from "../../../theme";
 
 export const StyledBadge = withStyles(() => ({
   badge: {
@@ -26,23 +25,35 @@ export const StyledBadge = withStyles(() => ({
   },
 }))(Badge);
 
-const useStyles = makeStyles({
-  messageContainer: {
+const styles = {
+  buttonRipple: {
+    color:theme.palette.primary.main,
+  },
+  main: {
     padding: "1em",
     width: "100%",
     justifyContent: "start",
     "&:hover": {
-      background: grey[200],
+      transform: "scale(1.01)",
+      boxShadow: "rgb(145 158 171 / 24%) 0px 5px 16px 0px",
     },
   },
-});
+};
+
+const StyledButton = withStyles(styles)((props) => (
+  <ButtonBase
+    className={props.classes.main}
+    TouchRippleProps={{ classes: { root: props.classes.buttonRipple } }}
+    component="div"
+  >
+    {props.children}
+  </ButtonBase>
+));
+
 function Conversation({ conversation }) {
   const history = useHistory();
   //context
   const socket = useContext(SocketContext);
-
-  //styles
-  const classes = useStyles();
 
   //states
   const [userInfo, setUserInfo] = useState({});
@@ -77,26 +88,29 @@ function Conversation({ conversation }) {
   function formatMessageTimestamp(timestamp) {
     return moment(timestamp)
       .fromNow(true)
-      .replace(/a few seconds| hours| minutes| days|an hour|a day/gi, function (x) {
-        switch (x) {
-          case " hours":
-            return "h";
-          case " minutes":
-            return "m";
-          case " days":
-            return "d";
-          case "a few seconds":
-            return "Just Now";
-          case "a minute":
-            return "1m";
-          case "an hour":
-            return "1h";
-          case "a day":
-            return "1d";
-          default:
-            return x;
+      .replace(
+        /a few seconds| hours| minutes| days|an hour|a day/gi,
+        function (x) {
+          switch (x) {
+            case " hours":
+              return "h";
+            case " minutes":
+              return "m";
+            case " days":
+              return "d";
+            case "a few seconds":
+              return "Just Now";
+            case "a minute":
+              return "1m";
+            case "an hour":
+              return "1h";
+            case "a day":
+              return "1d";
+            default:
+              return x;
+          }
         }
-      });
+      );
   }
 
   //useEffects
@@ -138,11 +152,7 @@ function Conversation({ conversation }) {
   }, [conversation, socket]);
 
   return (
-    <ButtonBase
-      className={classes.messageContainer}
-      onClick={openMessages}
-      component="div"
-    >
+    <StyledButton onClick={openMessages} component="div">
       <StyledBadge
         isonline={online ? 1 : 0}
         overlap="circle"
@@ -193,7 +203,7 @@ function Conversation({ conversation }) {
 
         <Badge color="primary" variant="dot" />
       </Box>
-    </ButtonBase>
+    </StyledButton>
   );
 }
 

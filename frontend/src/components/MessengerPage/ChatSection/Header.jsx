@@ -12,6 +12,18 @@ import { useState } from "react";
 import SocketContext from "../../../context/SocketContext";
 
 const useStyles = makeStyles({
+  header: {
+    position: "absolute",
+    backdropFilter:"blur(5px)",
+    backgroundColor:"#ffffffc5",
+    zIndex: "10",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    padding: "1em 2em",
+    borderRadius: "0 0 5px 5px",
+    boxShadow: "rgb(145 158 171 / 24%) 0px 8px 16px 0px",
+  },
   largeAvatar: {
     height: "2.5em",
     width: "2.5em",
@@ -51,16 +63,7 @@ function Header({ userInfo }) {
   }
 
   return (
-    <Box
-      py="1em"
-      px="2em"
-      width={1}
-      display="flex"
-      alignItems="center"
-      boxShadow="8px 2px 5px 2px #00000030"
-      position="relative"
-      zIndex="10"
-    >
+    <Box className={classes.header}>
       <StyledBadge
         variant="dot"
         badgeContent=" "
@@ -95,7 +98,7 @@ function Header({ userInfo }) {
         <IconButton
           className={classes.buttonIcon}
           onClick={() => {
-            callHandler("audio");
+            callHandler("AudioCall");
           }}
         >
           <Phone fontSize="large" color="primary" />
@@ -103,7 +106,7 @@ function Header({ userInfo }) {
         <IconButton
           className={classes.buttonIcon}
           onClick={() => {
-            callHandler("video");
+            callHandler("VideoCall");
           }}
         >
           <VideoCall fontSize="large" color="primary" />

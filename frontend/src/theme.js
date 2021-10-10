@@ -7,8 +7,12 @@ const theme = createMuiTheme({
     type: "light",
     primary: {
       light: "#75a7ff",
-      main: "#2979ff",
+      main: "#00ab55",
       dark: "#004ecb",
+    },
+    background: {
+      paper: "#fff",
+      default: "#fff",
     },
   },
 });

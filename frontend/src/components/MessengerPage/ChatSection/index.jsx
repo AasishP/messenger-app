@@ -39,7 +39,7 @@ function ChatSection() {
       style={{ height: "100vh" }}
       display="flex"
       flexDirection="column"
-      postition="relative"
+      position="relative"
       bgcolor={theme.palette.background.default}
     >
       <Header userInfo={userInfo} />

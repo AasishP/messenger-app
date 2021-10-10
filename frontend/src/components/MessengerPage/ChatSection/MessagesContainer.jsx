@@ -77,12 +77,13 @@ function MessagesContainer({ userInfo }) {
           overflowY: "scroll",
         }}
       >
-        {messages.map((msg) => {
+        {messages.map((msg,index) => {
           return (
             <Message
-              key={msg._id}
+              key={msg._id || Math.random() * 100000}
               seen={msg.seen}
               timestamp={msg.timestamp}
+              prevMsgTimestamp={messages[index - 1]?.timestamp||0}
               messageType={msg.from === userInfo.username ? "from" : "to"}
               userInfo={msg.from === userInfo.username ? userInfo : null}
             >

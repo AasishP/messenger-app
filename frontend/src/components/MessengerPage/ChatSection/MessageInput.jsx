@@ -13,6 +13,7 @@ const useStyles = makeStyles({
     borderRadius: "20px",
     margin: "1.5em auto",
     padding: "1em",
+    boxShadow: "rgb(145 158 171 / 24%) 0px 8px 16px 0px",
   },
 });
 
@@ -73,7 +74,7 @@ function MessageInput({ updateMessages }) {
   }
   return (
     <form onSubmit={sendMessage} style={{ marginTop: "auto" }}>
-      <Box className={classes.root} boxShadow={5}>
+      <Box className={classes.root} >
         <IconButton>
           <ImageRounded color="primary" />
         </IconButton>

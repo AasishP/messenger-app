@@ -31,7 +31,7 @@ function SelectionMenu() {
   };
   return (
     <>
-      <Box>
+      <Box mt={2} boxShadow="rgb(145 158 171 / 24%) 0px 3px 8px 0px" >
         <Tabs
           value={index}
           onChange={handleChange}
@@ -55,9 +55,9 @@ function SelectionMenu() {
       </Box>
       <TabPanel
         components={[
-            <ConversationsContainer />,
-            <FriendList />,
-            <FindFriends />
+          <ConversationsContainer />,
+          <FriendList />,
+          <FindFriends />,
         ]}
         index={index}
       />

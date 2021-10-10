@@ -7,6 +7,7 @@ import {
   makeStyles,
   Popover,
   Typography,
+  withStyles,
 } from "@material-ui/core";
 import { blue } from "@material-ui/core/colors";
 import { Clear, Done, PersonAdd } from "@material-ui/icons";
@@ -24,6 +25,31 @@ const useStyles = makeStyles({
     alignItems: "center",
   },
 });
+
+const styles = {
+  buttonRipple: {
+    color: theme.palette.primary.main,
+  },
+  main: {
+    padding: "1em",
+    width: "100%",
+    justifyContent: "start",
+    "&:hover": {
+      transform: "scale(1.01)",
+      boxShadow: "rgb(145 158 171 / 24%) 0px 5px 16px 0px",
+    },
+  },
+};
+
+const StyledButton = withStyles(styles)((props) => (
+  <ButtonBase
+    className={props.classes.main}
+    TouchRippleProps={{ classes: { root: props.classes.buttonRipple } }}
+    component="div"
+  >
+    {props.children}
+  </ButtonBase>
+));
 
 function People({ person, type, update }) {
   const history = useHistory();
@@ -64,6 +90,7 @@ function People({ person, type, update }) {
       console.log(err);
     }
   }
+
   //accept FriendRequest
   async function acceptFriendRequest() {
     try {
@@ -89,6 +116,7 @@ function People({ person, type, update }) {
       console.log(err);
     }
   }
+
   //cancel FriendRequest
   async function cancelFriendRequest() {
     try {
@@ -109,11 +137,66 @@ function People({ person, type, update }) {
         username: person.username,
         type: "unfriend",
       });
-      console.log("unfriend");
       update();
     } catch (err) {
       console.log(err);
     }
+  }
+
+  //button for friend type
+  function FriendUnFriendBtn({ unFriend }) {
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
+    const handleClick = (event) => {
+      setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+
+    const open = Boolean(anchorEl);
+    const id = open ? "unfriend" : undefined;
+
+    return (
+      <>
+        <Button
+          aria-describedby={id}
+          variant="outlined"
+          color="primary"
+          onClick={handleClick}
+          style={{ marginLeft: "auto", textTransform: "capitalize" }}
+        >
+          Friends
+        </Button>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "center",
+          }}
+        >
+          <Button
+            variant="outlined"
+            onClick={unFriend}
+            style={{
+              marginLeft: "auto",
+              textTransform: "capitalize",
+              color: theme.palette.grey[700],
+            }}
+          >
+            Unfriend
+          </Button>
+        </Popover>
+      </>
+    );
   }
 
   function getButton(type) {
@@ -158,8 +241,9 @@ function People({ person, type, update }) {
         return <FriendUnFriendBtn unFriend={unFriend} />;
     }
   }
+
   return (
-    <ButtonBase
+    <StyledButton
       onClick={openMessages}
       className={classes.button}
       component="div"
@@ -183,63 +267,7 @@ function People({ person, type, update }) {
         </Typography>
       </Box>
       {getButton(type)}
-    </ButtonBase>
-  );
-}
-
-//button for friend type
-function FriendUnFriendBtn({ unFriend }) {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? "unfriend" : undefined;
-
-  return (
-    <>
-      <Button
-        aria-describedby={id}
-        variant="outlined"
-        color="primary"
-        onClick={handleClick}
-        style={{ marginLeft: "auto", textTransform: "capitalize" }}
-      >
-        Friends
-      </Button>
-      <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-      >
-        <Button
-          variant="outlined"
-          onClick={unFriend}
-          style={{
-            marginLeft: "auto",
-            textTransform: "capitalize",
-            color: theme.palette.grey[700],
-          }}
-        >
-          Unfriend
-        </Button>
-      </Popover>
-    </>
+    </StyledButton>
   );
 }
 

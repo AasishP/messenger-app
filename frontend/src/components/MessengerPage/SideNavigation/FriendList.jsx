@@ -22,6 +22,7 @@ function FriendList() {
       style={{
         width: "100%",
         overflowY: "scroll",
+        overflowX: "hidden"
       }}
     >
       {!loading && friendList.length === 0 && (

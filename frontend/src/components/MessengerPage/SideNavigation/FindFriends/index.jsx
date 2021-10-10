@@ -15,6 +15,7 @@ function FindFriends() {
       style={{
         width: "100%",
         overflowY: "scroll",
+        overflowX: "hidden",
       }}
     >
       <FriendRequests changed={changed} update={update} />

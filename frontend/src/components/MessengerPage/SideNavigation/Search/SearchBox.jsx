@@ -33,9 +33,16 @@ function SearchBox() {
         display="flex"
         alignItems="center"
         borderRadius="5px"
-        boxShadow={3}
+        boxShadow="rgb(145 158 171 / 10%) 0px 2px 5px 3px"
       >
-        <input className={classes.searchInput}  placeholder="Search..." value={searchText} onChange={(e)=>{handleChange(e)}} />
+        <input
+          className={classes.searchInput}
+          placeholder="Search..."
+          value={searchText}
+          onChange={(e) => {
+            handleChange(e);
+          }}
+        />
         <IconButton type="submit">
           <Search />
         </IconButton>

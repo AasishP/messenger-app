@@ -1,7 +1,7 @@
 const { Promise } = require("mongoose");
 const User = require("../../models/user");
 
-async function handleMessage(recipient, text) {
+async function handleMessage({_id, recipient, text}) {
   const socket = this;
   const connectedUser = socket.request.verifiedUser.username;
 
@@ -22,7 +22,8 @@ async function handleMessage(recipient, text) {
     timestamp: new Date(),
   };
 
-  socket.to(recipient).emit("receive-message", message); //sending message to recipient.
+  socket.to(recipient).emit("receive-message", message) &&
+    console.log("message sent"); //sending message to recipient.
 
   const [conversationExistsInconnectedUser, conversationExistsInRecipient] =
     await Promise.all([

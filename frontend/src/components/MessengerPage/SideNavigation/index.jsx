@@ -4,6 +4,7 @@ import LogoutButton from "./LogoutButton";
 import UserWithAvatar from "./UserWithAvatar";
 import SelectionMenu from "./SelectionMenu";
 import Search from "./Search/index.jsx";
+import theme from "../../../theme";
 
 const useStyles = makeStyles({
   root: {
@@ -15,10 +16,13 @@ const useStyles = makeStyles({
   },
 });
 
-function SideNavigation({setShowChangeProfilePicture}) {
+function SideNavigation({ setShowChangeProfilePicture }) {
   const classes = useStyles();
   return (
-    <Box className={classes.root} borderRight="3px solid #00000018">
+    <Box
+      className={classes.root}
+      borderRight={`2px solid ${theme.palette.grey[200]}`}
+    >
       <Box
         px={2}
         py={3}
@@ -26,7 +30,9 @@ function SideNavigation({setShowChangeProfilePicture}) {
         alignItems="center"
         justifyContent="space-between"
       >
-        <UserWithAvatar setShowChangeProfilePicture={setShowChangeProfilePicture} />
+        <UserWithAvatar
+          setShowChangeProfilePicture={setShowChangeProfilePicture}
+        />
         <LogoutButton />
       </Box>
 
