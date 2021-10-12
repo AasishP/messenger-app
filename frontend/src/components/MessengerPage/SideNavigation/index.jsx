@@ -13,6 +13,9 @@ const useStyles = makeStyles({
     maxWidth: "400px",
     minWidth: "400px",
     maxHeight: "100vh",
+    [theme.breakpoints.down("sm")]: {
+      minWidth: "100%",
+    },
   },
 });
 

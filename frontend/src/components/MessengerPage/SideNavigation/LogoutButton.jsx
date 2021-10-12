@@ -26,9 +26,11 @@ function LogoutButton() {
     try {
       setLoggingOut(true);
       const res = await axios.delete("/logout", {
-        headers: { LogoutType: type}});
+        headers: { LogoutType: type },
+      });
       if (res.status === 200) {
         window.localStorage.clear();
+        console.log("cleared the localStorage");
         setLoggedIn(false);
       }
     } catch (err) {

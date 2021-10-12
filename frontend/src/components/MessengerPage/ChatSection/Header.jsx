@@ -4,6 +4,8 @@ import {
   Box,
   IconButton,
   makeStyles,
+  Menu,
+  MenuItem,
   Typography,
 } from "@material-ui/core";
 import { StyledBadge } from "../SideNavigation/Conversation";
@@ -14,8 +16,8 @@ import SocketContext from "../../../context/SocketContext";
 const useStyles = makeStyles({
   header: {
     position: "absolute",
-    backdropFilter:"blur(5px)",
-    backgroundColor:"#ffffffc5",
+    backdropFilter: "blur(5px)",
+    backgroundColor: "#ffffffc5",
     zIndex: "10",
     width: "100%",
     display: "flex",
@@ -31,6 +33,9 @@ const useStyles = makeStyles({
   buttonIcon: {
     margin: "0 0.7em",
   },
+  menu: {
+    marginTop: "3em",
+  },
 });
 
 function Header({ userInfo }) {
@@ -40,6 +45,11 @@ function Header({ userInfo }) {
 
   //states
   const [online, setOnline] = useState(userInfo.online);
+  const [anchorEl, setAnchorEl] = useState(null); //for menu
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   useEffect(() => {
     //updateOnlineState
@@ -111,9 +121,30 @@ function Header({ userInfo }) {
         >
           <VideoCall fontSize="large" color="primary" />
         </IconButton>
-        <IconButton className={classes.buttonIcon}>
+
+        {/* menu btn */}
+        <IconButton
+          className={classes.buttonIcon}
+          aria-controls="header-menu"
+          aria-haspopup="true"
+          onClick={(event) => {
+            setAnchorEl(event.currentTarget);
+          }}
+        >
           <MoreVert fontSize="large" color="primary" />
         </IconButton>
+        <Menu
+          id="header-menu"
+          className={classes.menu}
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+          <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+          <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+        </Menu>
       </Box>
     </Box>
   );

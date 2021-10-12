@@ -5,6 +5,7 @@ import {
   withStyles,
   Typography,
   ButtonBase,
+  makeStyles,
 } from "@material-ui/core";
 import moment from "moment";
 import React, { useContext, useEffect, useState } from "react";
@@ -25,9 +26,15 @@ export const StyledBadge = withStyles(() => ({
   },
 }))(Badge);
 
+const useStyles = makeStyles({
+  messageBadge: {
+    marginLeft: "1em",
+  },
+});
+
 const styles = {
   buttonRipple: {
-    color:theme.palette.primary.main,
+    color: theme.palette.primary.main,
   },
   main: {
     padding: "1em",
@@ -45,23 +52,75 @@ const StyledButton = withStyles(styles)((props) => (
     className={props.classes.main}
     TouchRippleProps={{ classes: { root: props.classes.buttonRipple } }}
     component="div"
+    onClick={props.onClick}
   >
     {props.children}
   </ButtonBase>
 ));
 
-function Conversation({ conversation }) {
+function MessageTime({ msgTimestamp }) {
+  //states
+  const [msgTime, setMsgTime] = useState(() => {
+    formatMessageTimestamp(msgTimestamp);
+  });
+
+  function formatMessageTimestamp(timestamp) {
+    return moment(timestamp)
+      .fromNow(true)
+      .replace(
+        /a few seconds| hours|a minute| minutes| days|an hour|a day/gi,
+        function (x) {
+          switch (x) {
+            case " hours":
+              return "h";
+            case " minutes":
+              return "m";
+            case " days":
+              return "d";
+            case " months":
+              return "mth";
+            case "a few seconds":
+              return "Just Now";
+            case "a minute":
+              return "1m";
+            case "an hour":
+              return "1h";
+            case "a day":
+              return "1d";
+            default:
+              return x;
+          }
+        }
+      );
+  }
+
+  useEffect(() => {
+    setMsgTime(formatMessageTimestamp(msgTimestamp)); //initial run
+    const updateInterval = setInterval(() => {
+      setMsgTime(formatMessageTimestamp(msgTimestamp));
+    }, 60000); //update every minutes
+    return () => {
+      clearInterval(updateInterval);
+    };
+  }, [msgTimestamp]);
+
+  return (
+    <Typography color="textSecondary" style={{ fontSize: "0.9rem" }}>
+      {msgTime}
+    </Typography>
+  );
+}
+
+function Conversation({ lastMessage, conversationWith }) {
+  const classes = useStyles();
   const history = useHistory();
   //context
   const socket = useContext(SocketContext);
 
   //states
   const [userInfo, setUserInfo] = useState({});
-  const [recentMessage, setRecentMessage] = useState(
-    conversation.messages[conversation.messages.length - 1]
-  );
   const [online, setOnline] = useState(false);
-
+  const [recentMessage, setRecentMessage] = useState(lastMessage);
   //custom events
 
   //add listener
@@ -81,36 +140,7 @@ function Conversation({ conversation }) {
 
   //open messages
   function openMessages() {
-    history.push(`/messenger/${conversation.with}`);
-  }
-
-  //format message timestamp
-  function formatMessageTimestamp(timestamp) {
-    return moment(timestamp)
-      .fromNow(true)
-      .replace(
-        /a few seconds| hours| minutes| days|an hour|a day/gi,
-        function (x) {
-          switch (x) {
-            case " hours":
-              return "h";
-            case " minutes":
-              return "m";
-            case " days":
-              return "d";
-            case "a few seconds":
-              return "Just Now";
-            case "a minute":
-              return "1m";
-            case "an hour":
-              return "1h";
-            case "a day":
-              return "1d";
-            default:
-              return x;
-          }
-        }
-      );
+    history.push(`/messenger/${conversationWith}`);
   }
 
   //useEffects
@@ -134,13 +164,13 @@ function Conversation({ conversation }) {
   useEffect(() => {
     //updateRecentMessage
     function updateRecentMessage(msg) {
-      msg.from === conversation.with && setRecentMessage(msg);
+      msg.from === conversationWith && setRecentMessage(msg);
 
-      msg.detail?.recipient === conversation.with &&
+      msg.detail?.recipient === conversationWith &&
         setRecentMessage(msg.detail); //in this case msg is the custom event object which contains the detail property which is the info passed during the dispatch of the event.
     }
 
-    getUserInfo(conversation.with);
+    getUserInfo(conversationWith);
 
     socket.on("receive-message", updateRecentMessage);
     onMessageSend(updateRecentMessage);
@@ -149,10 +179,10 @@ function Conversation({ conversation }) {
       socket.off("receive-message", updateRecentMessage);
       offMessageSend(updateRecentMessage); //removeEventListener
     };
-  }, [conversation, socket]);
+  }, [lastMessage, conversationWith, socket]);
 
   return (
-    <StyledButton onClick={openMessages} component="div">
+    <StyledButton onClick={openMessages}>
       <StyledBadge
         isonline={online ? 1 : 0}
         overlap="circle"
@@ -190,18 +220,9 @@ function Conversation({ conversation }) {
         </Typography>
       </Box>
 
-      <Box
-        width={1}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        {/* Message time */}
-        <Typography color="textSecondary" style={{ fontSize: "0.9rem" }}>
-          {formatMessageTimestamp(recentMessage.timestamp)}
-        </Typography>
-
-        <Badge color="primary" variant="dot" />
+      <Box marginLeft="auto" display="flex" alignItems="center">
+        <MessageTime msgTimestamp={recentMessage.timestamp} />
+        <Badge className={classes.messageBadge} color="primary" variant="dot" />
       </Box>
     </StyledButton>
   );

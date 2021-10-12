@@ -1,4 +1,4 @@
-import { Box } from "@material-ui/core";
+import { Box, useMediaQuery } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import theme from "../../theme";
@@ -18,6 +18,8 @@ const socket = io(config.wsAddress, {
 function MessengerPage({ user }) {
   const [showChangeProfilePicture, setShowChangeProfilePicture] =
     useState(false);
+
+  const notMediumScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     socket.on("success", (msg) => {
@@ -41,20 +43,36 @@ function MessengerPage({ user }) {
           bgcolor={theme.palette.background.default}
         >
           {user.newUser ? <ChangeProfilePicture greeting /> : null}
+
           {showChangeProfilePicture ? (
             <ChangeProfilePicture
               setShowChangeProfilePicture={setShowChangeProfilePicture}
             />
           ) : null}
-          <SideNavigation
-            setShowChangeProfilePicture={setShowChangeProfilePicture}
-          />
+
+          {notMediumScreen ? (
+            <>
+              <Route path="/messenger" exact>
+                <SideNavigation
+                  setShowChangeProfilePicture={setShowChangeProfilePicture}
+                />
+              </Route>
+              <Route path="/messenger/:username" exact>
+                <ChatSection />
+              </Route>
+            </>
+          ) : (
+            <>
+              <SideNavigation
+                setShowChangeProfilePicture={setShowChangeProfilePicture}
+              />
+              <Route path="/messenger/:username?">
+                <ChatSection />
+              </Route>
+            </>
+          )}
 
           <CallSection />
-
-          <Route path="/messenger/:username?">
-            <ChatSection />
-          </Route>
         </Box>
       </LoggedInUserContext.Provider>
     </SocketContext.Provider>

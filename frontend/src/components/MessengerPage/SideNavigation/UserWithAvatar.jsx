@@ -8,6 +8,11 @@ const useStyles = makeStyles({
     fontWeight: "bolder",
     marginLeft: "0.5em",
   },
+  userAvatar: {
+    "&:hover": {
+      cursor: "pointer",
+    },
+  },
 });
 
 function UserWithAvatar({ setShowChangeProfilePicture }) {
@@ -19,6 +24,7 @@ function UserWithAvatar({ setShowChangeProfilePicture }) {
         onClick={() => {
           setShowChangeProfilePicture(true);
         }}
+        className={classes.userAvatar}
         alt={LoggedInUser.username}
         src={LoggedInUser.profilePic}
       />

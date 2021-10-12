@@ -101,7 +101,7 @@ function Message({
           borderRadius={getBorderRadius(messageType)}
           boxShadow="rgb(145 158 171 / 24%) 0px 8px 16px 0px"
           bgcolor={getColor(messageType).background}
-          mx="2em"
+          mx={messageType === "from"?"2em":0}
           p="1em"
         >
           <Typography

@@ -45,15 +45,21 @@ function ConversationsContainer() {
     <div
       style={{
         width: "100%",
+        height: "100%",
         marginTop: "0.5em",
         overflowY: "scroll",
         overflowX: "hidden",
       }}
     >
       {conversations.map((conversation) => (
-        <Conversation key={conversation._id} conversation={conversation} />
+        <Conversation
+          key={conversation._id}
+          lastMessage={
+            conversation.messages[conversation.messages.length - 1]
+          }
+          conversationWith={conversation.with}
+        />
       ))}
-
     </div>
   );
 }
