@@ -10,11 +10,10 @@ import {
 import { Image, Publish } from "@material-ui/icons";
 import React, { useContext, useState } from "react";
 import axios from "../../api";
-import theme from "../../theme";
 import Alert from "../Utils/Alert";
 import LoggedInUserContext from "../../context/LoggedInUserContext";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   modal: {
     display: "flex",
     justifyContent: "center",
@@ -22,17 +21,16 @@ const useStyles = makeStyles({
   },
   modal__content: {
     height: "600px",
-    width: "600px",
-    borderRadius: "15px",
-    backgroundColor: "#8585855a",
-    backdropFilter: "blur(5px)",
+    width: "400px",
+    borderRadius: "10px",
+    backgroundColor: theme.palette.background.paper,
     boxShadow: theme.shadows[5],
     outline: "none",
   },
   avatar: {
     margin: "1em 0",
-    height: "200px",
-    width: "200px",
+    height: "170px",
+    width: "170px",
   },
   btnsContainer: {
     margin: "1.5em 0",
@@ -43,10 +41,28 @@ const useStyles = makeStyles({
   infoText: {
     fontSize: "1.2rem",
   },
-  txtWhite: {
-    color: "white",
+  fullNameText: {
+    marginTop: "1.5em",
+    fontSize: "1.8rem",
+    fontWeight: "bold",
+    color: "#2e2e2e",
   },
-});
+  usernameText: {
+    marginTop: "0.3em",
+    marginBottom: "0.8em",
+    fontSize: "1.4rem",
+    fontWeight: "500",
+    color: "#2e2e2e",
+  },
+  btn: {
+    margin: "0.5em 0",
+    padding: "0.5em",
+    width: "75%",
+    "&:last-child": {
+      margin: "3em 0",
+    },
+  },
+}));
 
 function ChangeProfilePicture({ greeting, setShowChangeProfilePicture }) {
   const classes = useStyles();
@@ -122,11 +138,18 @@ function ChangeProfilePicture({ greeting, setShowChangeProfilePicture }) {
         >
           {alert ? <Alert type={alert.type}>{alert.message}</Alert> : null}
           <Typography
-            className={`${classes.txtWhite} ${classes.greetingText}`}
-            variant="h3"
+            className={classes.fullNameText}
+            variant="h5"
             align="center"
           >
-            Hi! {LoggedInUser.firstName}
+            {LoggedInUser.firstName} {LoggedInUser.lastName}
+          </Typography>
+          <Typography
+            className={classes.usernameText}
+            variant="h6"
+            align="center"
+          >
+            @{LoggedInUser.username}
           </Typography>
           <Typography
             className={`${classes.txtWhite} ${classes.infoText}`}
@@ -138,27 +161,25 @@ function ChangeProfilePicture({ greeting, setShowChangeProfilePicture }) {
                 <br />
                 Set your Profile Picture to continue.
               </>
-            ) : (
-              <>
-                Click Choose To Select Your Profile Picture
-                <br />
-                And Upload To Set Your Profile Picture
-              </>
-            )}
+            ) : null}
           </Typography>
           <Avatar
             className={classes.avatar}
             src={profilePicture}
             alt="avatar"
           />
-          <Typography className={classes.txtWhite} variant="h4" align="center">
-            {LoggedInUser.firstName}
-          </Typography>
 
           {uploading ? <CircularProgress size="2rem" /> : null}
 
           {/* Image upload Input */}
-          <Box className={classes.btnsContainer}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            width={1}
+            mt="auto"
+            mb="2em"
+          >
             <input
               accept="image/*"
               style={{ display: "none" }}
@@ -166,19 +187,20 @@ function ChangeProfilePicture({ greeting, setShowChangeProfilePicture }) {
               type="file"
               onChange={showProfilePicture}
             />
-            <label htmlFor="raised-button-file">
-              <Button
-                variant="contained"
-                component="span"
-                color="primary"
-                endIcon={<Image />}
-              >
-                Choose
-              </Button>
-            </label>
+
             <Button
+              className={classes.btn}
+              variant="contained"
+              component="label"
+              htmlFor="raised-button-file"
+              color="primary"
+              endIcon={<Image />}
+            >
+              Choose
+            </Button>
+            <Button
+              className={classes.btn}
               onClick={uploadProfilePicture}
-              style={{ marginLeft: "1em" }}
               variant="contained"
               component="span"
               color="primary"
@@ -186,17 +208,17 @@ function ChangeProfilePicture({ greeting, setShowChangeProfilePicture }) {
             >
               Upload
             </Button>
-          </Box>
 
-          {/* skip/close button */}
-          <Button
-            className={classes.btn}
-            variant="contained"
-            color="secondary"
-            onClick={handleClose}
-          >
-            {greeting ? "Skip Now" : "Close"}
-          </Button>
+            {/* skip/close button */}
+            <Button
+              className={classes.btn}
+              variant="contained"
+              color="secondary"
+              onClick={handleClose}
+            >
+              {greeting ? "Skip Now" : "Close"}
+            </Button>
+          </Box>
         </Box>
       </Modal>
     </>

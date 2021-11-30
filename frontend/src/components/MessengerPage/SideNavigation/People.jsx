@@ -13,10 +13,10 @@ import { blue } from "@material-ui/core/colors";
 import { Clear, Done, PersonAdd } from "@material-ui/icons";
 import axios from "../../../api";
 import React, { useContext, useEffect, useState } from "react";
-import theme from "../../../theme";
 import { StyledBadge } from "./Conversation";
 import { useHistory } from "react-router-dom";
 import SocketContext from "../../../context/SocketContext";
+import { useTheme } from "@material-ui/styles";
 
 const useStyles = makeStyles({
   button: {
@@ -26,12 +26,12 @@ const useStyles = makeStyles({
   },
 });
 
-const styles = {
+const styles = (theme) => ({
   buttonRipple: {
     color: theme.palette.primary.main,
   },
   main: {
-    padding: "1em",
+    padding: "0.5em",
     width: "100%",
     justifyContent: "start",
     "&:hover": {
@@ -39,10 +39,11 @@ const styles = {
       boxShadow: "rgb(145 158 171 / 24%) 0px 5px 16px 0px",
     },
   },
-};
+});
 
 const StyledButton = withStyles(styles)((props) => (
   <ButtonBase
+    onClick={props.onClick}
     className={props.classes.main}
     TouchRippleProps={{ classes: { root: props.classes.buttonRipple } }}
     component="div"
@@ -50,6 +51,30 @@ const StyledButton = withStyles(styles)((props) => (
     {props.children}
   </ButtonBase>
 ));
+
+function MutualFriendInformation({ person }) {
+  const theme = useTheme();
+  let info = "";
+  switch (true) {
+    case person.mutualFriends.length === 0:
+      return null;
+    case person.mutualFriends.length === 1:
+      info = `${person.mutualFriends[0]} is mutual`;
+      break;
+    case person.mutualFriends.length === 2:
+      info = `${person.mutualFriends[0]} and ${person.mutualFriends[1]} are mutual`;
+      break;
+    default:
+      info = `${person.mutualFriends.length} mutual friends including ${person.mutualFriends[0]} and ${person.mutualFriends[1]}`;
+      break;
+  }
+
+  return (
+    <Typography variant="body2" style={{ color: theme.palette.grey[700] }}>
+      {info}
+    </Typography>
+  );
+}
 
 function People({ person, type, update }) {
   const history = useHistory();
@@ -145,6 +170,7 @@ function People({ person, type, update }) {
 
   //button for friend type
   function FriendUnFriendBtn({ unFriend }) {
+    const theme = useTheme();
     const [anchorEl, setAnchorEl] = React.useState(null);
 
     const handleClick = (event) => {
@@ -203,7 +229,7 @@ function People({ person, type, update }) {
     switch (type) {
       case "request":
         return (
-          <Box ml="auto">
+          <Box ml="auto" display="flex">
             {/* accept Button */}
             <IconButton onClick={acceptFriendRequest}>
               <Done htmlColor={blue[600]} />
@@ -260,11 +286,13 @@ function People({ person, type, update }) {
       <Box ml={2}>
         <Typography
           variant="h6"
-          style={{ fontSize: "1.125rem" }}
+          style={{ fontSize: "1rem" }}
           color="textPrimary"
         >
           {person.firstName} {person.lastName}
         </Typography>
+        {/* mutual friends information*/}
+        {type ? <MutualFriendInformation person={person} /> : null}
       </Box>
       {getButton(type)}
     </StyledButton>

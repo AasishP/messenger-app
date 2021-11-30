@@ -1,12 +1,12 @@
-import { Box, Typography } from "@material-ui/core";
+import { Box, Typography, useTheme } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
 import MessagesContainer from "./MessagesContainer";
-import theme from "../../../theme";
 import { useParams } from "react-router";
 import axios from "../../../api";
 
 function ChatSection() {
+  const theme = useTheme();
   const { username } = useParams();
   const [userInfo, setUserInfo] = useState({});
 

@@ -3,10 +3,10 @@ import { Box, makeStyles } from "@material-ui/core";
 import LogoutButton from "./LogoutButton";
 import UserWithAvatar from "./UserWithAvatar";
 import SelectionMenu from "./SelectionMenu";
-import Search from "./Search/index.jsx";
-import theme from "../../../theme";
+import SearchBox from "./SearchBox/index.jsx";
+import { useTheme } from "@material-ui/styles";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     flexDirection: "column",
@@ -17,9 +17,10 @@ const useStyles = makeStyles({
       minWidth: "100%",
     },
   },
-});
+}));
 
 function SideNavigation({ setShowChangeProfilePicture }) {
+  const theme = useTheme();
   const classes = useStyles();
   return (
     <Box
@@ -38,8 +39,7 @@ function SideNavigation({ setShowChangeProfilePicture }) {
         />
         <LogoutButton />
       </Box>
-
-      <Search />
+      <SearchBox />
       <SelectionMenu />
     </Box>
   );

@@ -1,9 +1,14 @@
-import React,{ useState } from "react";
-import { Box, Slide, Typography } from "@material-ui/core";
-import theme from "../../theme";
-import { CheckCircleOutline, ErrorOutlineOutlined, InfoOutlined, WarningOutlined } from "@material-ui/icons";
+import React, { useState } from "react";
+import { Box, Slide, Typography, useTheme } from "@material-ui/core";
+import {
+  CheckCircleOutline,
+  ErrorOutlineOutlined,
+  InfoOutlined,
+  WarningOutlined,
+} from "@material-ui/icons";
 
 function Alert({ type, children }) {
+  const theme = useTheme();
   const [show, setShow] = useState(true);
   setTimeout(() => {
     setShow(false);
@@ -36,4 +41,4 @@ function Alert({ type, children }) {
   );
 }
 
-export default Alert
+export default Alert;

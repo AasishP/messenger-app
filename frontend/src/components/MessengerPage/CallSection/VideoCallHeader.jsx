@@ -5,15 +5,12 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import {
-  Fullscreen,
-  FullscreenExit,
-  PictureInPictureAlt,
-} from "@material-ui/icons";
+import { Fullscreen, FullscreenExit } from "@material-ui/icons";
 import React, { useState } from "react";
-import theme from "../../../theme";
+import { CALLSTATES } from ".";
+import Timer from "./CallTimer";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   videoCallHeader: {
     position: "absolute",
     zIndex: "1000",
@@ -45,10 +42,11 @@ const useStyles = makeStyles({
     height: "2.3em",
     width: "2.3em",
   },
-});
+}));
 
-function VideoCallHeader() {
+function VideoCallHeader({ callState, callingUser, callStartedTime }) {
   const classes = useStyles();
+
   const [fullScreen, setFullScreen] = useState(false);
 
   function toggleFullScreen() {
@@ -66,26 +64,25 @@ function VideoCallHeader() {
   return (
     <Box className={classes.videoCallHeader}>
       <Box className={classes.userInfoContainer}>
-        <Avatar className={classes.avatar} />
+        <Avatar className={classes.avatar} src={callingUser.profilePic} />
         <Box className={classes.wrapper}>
           <Typography variant="h6" className={classes.username}>
-            Aashish Paudel
+            {callingUser.firstName} {callingUser.lastName}
           </Typography>
-          <Typography variant="subtitle2" className={classes.timer}>
-            10:20
-          </Typography>
+          {callState === CALLSTATES.ONGOING && (
+            <Typography variant="subtitle2" className={classes.timer}>
+              <Timer callStartedTime={callStartedTime} callState={callState} />
+            </Typography>
+          )}
         </Box>
       </Box>
       <Box className={classes.headerBtnsContainer}>
         <IconButton className={classes.headerBtn} onClick={toggleFullScreen}>
           {fullScreen ? (
-              <FullscreenExit htmlColor="white" />
-              ) : (
-              <Fullscreen htmlColor="white" />
+            <FullscreenExit htmlColor="white" />
+          ) : (
+            <Fullscreen htmlColor="white" />
           )}
-        </IconButton>
-        <IconButton className={classes.headerBtn}>
-          <PictureInPictureAlt htmlColor="white" />
         </IconButton>
       </Box>
     </Box>

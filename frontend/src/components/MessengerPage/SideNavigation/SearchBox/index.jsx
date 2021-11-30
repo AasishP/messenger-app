@@ -1,33 +1,43 @@
-import React ,{useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Box, IconButton, makeStyles } from "@material-ui/core";
 import { Search } from "@material-ui/icons";
-import theme from "../../../../theme";
+import SearchResults from "./SearchResults";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+  root: {
+    position: "relative",
+  },
   searchInput: {
-    color:theme.palette.text.primary ,
+    color: theme.palette.text.primary,
     fontSize: "1rem",
     background: "transparent",
     outline: "none",
     border: "none",
     width: "100%",
     "&::placeholder": {
-      color:theme.palette.text.secondary,
+      color: theme.palette.text.secondary,
       fontSize: "1rem",
     },
   },
-});
+}));
 
 function SearchBox() {
   const classes = useStyles();
   const [searchText, setSearchText] = useState();
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
-  function handleChange(e){
-      setSearchText(e.target.value)
+  function handleChange(e) {
+    setSearchText(e.target.value);
   }
+
+  useEffect(() => {
+    searchText ? setShowSearchResults(true) : setShowSearchResults(false);
+  }, [searchText]);
+
   return (
     <form>
       <Box
+        className={classes.root}
         m="1em"
         pl="1em"
         display="flex"
@@ -46,6 +56,12 @@ function SearchBox() {
         <IconButton type="submit">
           <Search />
         </IconButton>
+        {showSearchResults ? (
+          <SearchResults
+            searchText={searchText}
+            setShowSearchResults={setShowSearchResults}
+          />
+        ) : null}
       </Box>
     </form>
   );

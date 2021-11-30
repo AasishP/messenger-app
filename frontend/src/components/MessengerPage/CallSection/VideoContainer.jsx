@@ -30,7 +30,7 @@ function VideoContainer({ localVideo, remoteVideo }) {
   return (
     <Box className={classes.videoContainer}>
       <Box className={classes.localVideoContainer}>
-        <video ref={localVideo} autoPlay={true} />
+        <video ref={localVideo} autoPlay={true} muted={true} />
       </Box>
       <video ref={remoteVideo} autoPlay={true} />
     </Box>

@@ -5,14 +5,17 @@ import {
   makeStyles,
   Slide,
   Typography,
+  useTheme,
 } from "@material-ui/core";
-import { Call, CallEnd, MicOff, VideoCall } from "@material-ui/icons";
-import React, { useState } from "react";
+import { Call, CallEnd, Mic, MicOff, VideoCall } from "@material-ui/icons";
+import React, { useEffect, useRef, useState } from "react";
 import { createRef } from "react";
-import theme from "../../../theme";
+import Timer from "./CallTimer";
+import Sounds from "./Sounds";
+import { CALLSTATES } from "."; //STRING CONSTANTS
 
-const useStyles = makeStyles({
-  root: {
+const useStyles = makeStyles((theme) => ({
+  call_alert: {
     width: "fit-content",
     padding: "1em",
     display: "flex",
@@ -24,11 +27,9 @@ const useStyles = makeStyles({
     zIndex: "2000",
     borderRadius: "20px",
     backgroundColor: theme.palette.background.paper,
-    // "&:hover": {
-    //   cursor: "move",
-    // },
   },
 
+  //ripple animation around Avatar
   call_animation: {
     width: "3em",
     height: "3em",
@@ -37,14 +38,14 @@ const useStyles = makeStyles({
     alignItems: "center",
     position: "relative",
     borderRadius: "50%",
-    animation: "$play 2s ease infinite",
+    animation: "$ripple 2s ease infinite",
     webkitBackfaceVisibility: "hidden",
     mozBackfaceVisibility: "hidden",
     msBackfaceVisibility: "hidden",
     backfaceVisibility: "hidden",
   },
 
-  "@keyframes play": {
+  "@keyframes ripple": {
     "0%": {
       transform: " scale(1)",
     },
@@ -61,27 +62,25 @@ const useStyles = makeStyles({
         (theme.palette.type === "dark" ? "#ffffff33" : "#aadff833"),
     },
   },
-
   avatar: {
     height: "2.5em",
     width: "2.5em",
+  },
+  callerName: {
+    fontSize: "1.1rem",
+  },
+}));
+
+const useButtonStyles = makeStyles((theme) => ({
+  button: {
+    marginLeft: "0.2em",
+    backgroundColor: theme.palette.background.default,
   },
   button_incoming: {
     margin: "0 0.2em",
     backgroundColor: theme.palette.background.default,
     animation: "$vibrate 100ms infinite alternate ease-in-out",
   },
-  button: {
-    margin: "0 0.2em",
-    backgroundColor: theme.palette.background.default,
-  },
-  username: {
-    fontSize: "1.1rem",
-  },
-  discription: {
-    fontSize: "0.9rem",
-  },
-
   "@keyframes vibrate": {
     from: {
       transform: "rotateZ(-5deg) translateY(0px)",
@@ -90,163 +89,243 @@ const useStyles = makeStyles({
       transform: "rotateZ(5deg) translateY(1px)",
     },
   },
-});
+}));
 
-function CallAlert({ direction, callType }) {
+function CallStatus({ callState, callStartedTime }) {
+  const theme = useTheme();
+  const getTextColor = () => {
+    switch (callState) {
+      case CALLSTATES.CALLFAILED:
+      case CALLSTATES.CONNECTIONLOST:
+      case "hangup":
+        return theme.palette.error.main;
+      case CALLSTATES.NOANSWER:
+      case CALLSTATES.BUSY:
+        return theme.palette.warning.main;
+
+      default:
+        return theme.palette.text.secondary;
+    }
+  };
+  return (
+    <Typography
+      style={{ color: getTextColor() || theme.palette.text.secondary }}
+      variant="body1"
+    >
+      {console.log(callState)}
+      {
+        {
+          connecting: "connecting. . .",
+          connected: "connected",
+          callFailed: "call Failed!",
+          calling: "calling. . .",
+          ringing: "Incoming Call. . .",
+          noAnswer: "No Answer!",
+          busy: "Busy!",
+          ongoing: (
+            <Timer callStartedTime={callStartedTime} callState={callState} />
+          ),
+          reconnecting: "Reconnecting. . .",
+          connectionLost: (
+            <span>
+              <Timer callStartedTime={callStartedTime} callState={callState} />
+              {"\tConnection Lost!"}
+            </span>
+          ),
+          hangup: (
+            <span>
+              <Timer callStartedTime={callStartedTime} callState={callState} />
+              {"\tcall Ended!"}
+            </span>
+          ),
+        }[callState]
+      }
+    </Typography>
+  );
+}
+
+function MicButton({ disabled, muted, setMuted }) {
+  const theme = useTheme();
+  const classes = useButtonStyles();
+  return (
+    <IconButton
+      className={classes.button}
+      disabled={disabled}
+      onClick={() => {
+        setMuted(!muted);
+      }}
+    >
+      {muted ? (
+        <MicOff htmlColor={theme.palette.grey[500]} />
+      ) : (
+        <Mic htmlColor={theme.palette.grey[500]} />
+      )}
+    </IconButton>
+  );
+}
+
+function RecallButton({ callType, callingUser }) {
+  const theme = useTheme();
+  const classes = useButtonStyles();
+  return (
+    <IconButton
+      className={classes.button_incoming}
+      onClick={() => {
+        const call = new CustomEvent("call", {
+          detail: { callingUser, callType },
+        });
+        document.dispatchEvent(call);
+      }}
+    >
+      <Call htmlColor={theme.palette.success.main} />
+    </IconButton>
+  );
+}
+function AcceptCallButton({ callType }) {
+  const theme = useTheme();
+  const classes = useButtonStyles();
+  return (
+    <IconButton
+      className={classes.button_incoming}
+      onClick={() => {
+        const callAccepted = new CustomEvent("callAccepted");
+        document.dispatchEvent(callAccepted);
+      }}
+    >
+      {
+        {
+          AudioCall: <Call htmlColor={theme.palette.success.main} />,
+          VideoCall: <VideoCall htmlColor={theme.palette.success.main} />,
+        }[callType]
+      }
+    </IconButton>
+  );
+}
+
+function EndCallButton() {
+  const theme = useTheme();
+  const classes = useButtonStyles();
+  return (
+    <IconButton
+      className={classes.button}
+      onClick={() => {
+        const callEnd = new CustomEvent("callEnd");
+        document.dispatchEvent(callEnd);
+      }}
+    >
+      <CallEnd htmlColor={theme.palette.error.main} />
+    </IconButton>
+  );
+}
+
+function ActionButtons({ callType, callState, callingUser, muted, setMuted }) {
+  switch (true) {
+    case [
+      CALLSTATES.CONNECTING,
+      CALLSTATES.CONNECTED,
+      CALLSTATES.CALLING,
+      CALLSTATES.ONGOING,
+      CALLSTATES.RECONNECTING,
+    ].some((state) => state === callState):
+      return (
+        <>
+          <MicButton
+            disabled={callState !== CALLSTATES.ONGOING}
+            muted={muted}
+            setMuted={setMuted}
+          />
+          <EndCallButton />
+        </>
+      );
+
+    case [
+      CALLSTATES.CALLFAILED,
+      CALLSTATES.NOANSWER,
+      CALLSTATES.BUSY,
+      CALLSTATES.CONNECTIONLOST,
+    ].some((state) => state === callState):
+      return <RecallButton callType={callType} callingUser={callingUser} />;
+
+    case callState === CALLSTATES.RINGING:
+      return (
+        <>
+          <AcceptCallButton callType={callType} />
+          <EndCallButton />
+        </>
+      );
+    default:
+      return null;
+  }
+}
+
+function CallAlert({
+  direction,
+  callType,
+  callState,
+  callingUser,
+  remoteStream,
+  localStream,
+  callStartedTime,
+}) {
   const classes = useStyles();
-  //states
-  const [mouseDown, setMouseDown] = useState(false);
+  //refs
   const alertRef = createRef(null);
-  // const [showTimer, setShowTimer] = useState(false);
+  const audioRef = useRef();
+  //states
+  const [muted, setMuted] = useState(false);
 
-  // function DragHandler(e) {
-  //   if (mouseDown) {
-  //     const style = window.getComputedStyle(alertRef.current);
-  //     alertRef.current.style.left = `${
-  //       e.clientX - parseFloat(style.width) / 2
-  //     }px`;
-  //     alertRef.current.style.top = `${
-  //       e.clientY - parseFloat(style.height) / 2
-  //     }px`;
-  //   }
-  // }
-
-  function AlertText() {
-    switch (direction) {
-      case "incoming":
-        return <>Incoming call...</>;
-      case "outgoing":
-        return <>Calling...</>;
-      default:
-        return null;
+  useEffect(() => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach((track) => (track.enabled = !muted)); //toggle mic
     }
-  }
+  }, [muted, localStream]);
 
-  function ActionButtons() {
-    const type = `${direction}${callType}`;
-    switch (type) {
-      case "incomingAudioCall":
-        return (
-          <>
-            <IconButton
-              className={classes.button_incoming}
-              onClick={() => {
-                console.log("call accepted");
-                const callAccepted = new CustomEvent("callAccepted");
-                document.dispatchEvent(callAccepted);
-              }}
-            >
-              <Call htmlColor={theme.palette.success.main} />
-            </IconButton>
-            <IconButton className={classes.button_incoming} onClick={() => {}}>
-              <CallEnd htmlColor={theme.palette.error.main} />
-            </IconButton>
-          </>
-        );
-      case "incomingVideoCall":
-        return (
-          <>
-            <IconButton
-              className={classes.button_incoming}
-              onClick={() => {
-                const callAccepted = new CustomEvent("callAccepted");
-                document.dispatchEvent(callAccepted);
-              }}
-            >
-              <VideoCall htmlColor={theme.palette.success.main} />
-            </IconButton>
-            <IconButton className={classes.button_incoming} onClick={() => {}}>
-              <CallEnd htmlColor={theme.palette.error.main} />
-            </IconButton>
-          </>
-        );
-      case "outgoingAudioCall":
-        return (
-          <>
-            <IconButton className={classes.button} onClick={() => {}}>
-              <MicOff htmlColor={theme.palette.grey[500]} />
-            </IconButton>
-            <IconButton className={classes.button} onClick={() => {}}>
-              <CallEnd htmlColor={theme.palette.error.main} />
-            </IconButton>
-          </>
-        );
-      case "outgoingVideoCall":
-        return (
-          <>
-            <IconButton className={classes.button} onClick={() => {}}>
-              <VideoCall htmlColor={theme.palette.success.main} />
-            </IconButton>
-            <IconButton className={classes.button} onClick={() => {}}>
-              <CallEnd htmlColor={theme.palette.error.main} />
-            </IconButton>
-          </>
-        );
-      case "ongoingVideoCall":
-        return (
-          <>
-            <IconButton className={classes.button} onClick={() => {}}>
-              <VideoCall htmlColor={theme.palette.success.main} />
-            </IconButton>
-            <IconButton className={classes.button} onClick={() => {}}>
-              <CallEnd htmlColor={theme.palette.error.main} />
-            </IconButton>
-          </>
-        );
-      case "ongoingAudioCall":
-        return (
-          <>
-            <IconButton className={classes.button} onClick={() => {}}>
-              <MicOff htmlColor={theme.palette.grey} />
-            </IconButton>
-            <IconButton className={classes.button} onClick={() => {}}>
-              <CallEnd htmlColor={theme.palette.error.main} />
-            </IconButton>
-          </>
-        );
-      default:
-        return null;
+  useEffect(() => {
+    if (remoteStream) {
+      audioRef.current.srcObject = remoteStream;
+      audioRef.current.play();
     }
-  }
+  }, [remoteStream]);
 
   return (
-    <Slide direction="down" in={true} timeout={{ enter: 300, exit: 500 }}>
-      <Box
-        className={classes.root}
-        boxShadow={5}
-        ref={alertRef}
-        // onMouseDown={() => {
-        //   setMouseDown(true);
-        // }}
-        // onMouseUp={() => {
-        //   setMouseDown(false);
-        // }}
-        // onMouseLeave={() => {
-        //   setMouseDown(false);
-        // }}
-        // onMouseMove={DragHandler}
-      >
+    <Slide direction="down" in={true} timeout={{ enter: 200, exit: 500 }}>
+      <Box className={classes.call_alert} boxShadow={5} ref={alertRef}>
+        {remoteStream && <audio ref={audioRef} autoPlay={true} />}
+
+        <Sounds callState={callState} />
+
         <div className={classes.call_animation}>
-          <Avatar className={classes.avatar} alt="user" />
+          <Avatar
+            className={classes.avatar}
+            src={callingUser.profilePic}
+            alt="user"
+          />
         </div>
 
         <Box
           mx="1em"
           style={{
+            //makes text unselectable
             WebkitUserSelect: "none" /* Chrome all / Safari all */,
             MozUserSelect: "none" /* Firefox all */,
             msUserSelect: "none" /* IE 10+ */,
             userSelect: "none",
           }}
         >
-          <Typography color="textSecondary" className={classes.discription}>
-            <AlertText />
-          </Typography>
-          <Typography color="textPrimary" className={classes.username}>
-            Aasish
+          <CallStatus callState={callState} callStartedTime={callStartedTime} />
+
+          <Typography color="textPrimary" style={{ fontSize: "1.1em" }}>
+            {callingUser.firstName} {callingUser.lastName}
           </Typography>
         </Box>
-        <ActionButtons />
+
+        <ActionButtons
+          callState={callState}
+          callType={callType}
+          direction={direction}
+          muted={muted}
+          setMuted={setMuted}
+        />
       </Box>
     </Slide>
   );

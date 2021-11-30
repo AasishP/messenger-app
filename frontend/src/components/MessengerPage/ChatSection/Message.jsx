@@ -1,9 +1,14 @@
-import { Avatar, Box, makeStyles, Typography } from "@material-ui/core";
+import {
+  Avatar,
+  Box,
+  makeStyles,
+  Typography,
+  useTheme,
+} from "@material-ui/core";
 import moment from "moment";
 import React from "react";
-import theme from "../../../theme";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   avatar: {
     height: "2.4em",
     width: "2.4em",
@@ -11,7 +16,7 @@ const useStyles = makeStyles({
   timestamp: {
     marginTop: "4em",
   },
-});
+}));
 
 function Message({
   children,
@@ -21,6 +26,7 @@ function Message({
   messageType,
   userInfo,
 }) {
+  const theme = useTheme();
   const classes = useStyles();
 
   function showTimestamp() {
@@ -101,7 +107,7 @@ function Message({
           borderRadius={getBorderRadius(messageType)}
           boxShadow="rgb(145 158 171 / 24%) 0px 8px 16px 0px"
           bgcolor={getColor(messageType).background}
-          mx={messageType === "from"?"2em":0}
+          mx={messageType === "from" ? "2em" : 0}
           p="1em"
         >
           <Typography

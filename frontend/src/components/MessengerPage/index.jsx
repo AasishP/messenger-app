@@ -1,7 +1,6 @@
-import { Box, useMediaQuery } from "@material-ui/core";
+import { Box, useMediaQuery, useTheme } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import theme from "../../theme";
 import ChatSection from "./ChatSection/index";
 import SideNavigation from "./SideNavigation/index";
 import ChangeProfilePicture from "./ChangeProfilePicture";
@@ -16,6 +15,7 @@ const socket = io(config.wsAddress, {
 });
 
 function MessengerPage({ user }) {
+  const theme = useTheme();
   const [showChangeProfilePicture, setShowChangeProfilePicture] =
     useState(false);
 
@@ -40,6 +40,7 @@ function MessengerPage({ user }) {
         <Box
           display="flex"
           minHeight={"100vh"}
+          position="relative"
           bgcolor={theme.palette.background.default}
         >
           {user.newUser ? <ChangeProfilePicture greeting /> : null}

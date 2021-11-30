@@ -12,7 +12,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import axios from "../../../api";
 import SocketContext from "../../../context/SocketContext";
-import theme from "../../../theme";
 
 export const StyledBadge = withStyles(() => ({
   badge: {
@@ -32,7 +31,7 @@ const useStyles = makeStyles({
   },
 });
 
-const styles = {
+const styles = (theme) => ({
   buttonRipple: {
     color: theme.palette.primary.main,
   },
@@ -45,7 +44,7 @@ const styles = {
       boxShadow: "rgb(145 158 171 / 24%) 0px 5px 16px 0px",
     },
   },
-};
+});
 
 const StyledButton = withStyles(styles)((props) => (
   <ButtonBase

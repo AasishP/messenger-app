@@ -5,90 +5,142 @@ import SocketContext from "../../../context/SocketContext";
 import LoggedInUserContext from "../../../context/LoggedInUserContext";
 import VideoCallScreen from "./VideoCallScreen";
 
+export const CALLSTATES = {
+  CONNECTING: "connecting",
+  CONNECTED: "connected",
+  CALLFAILED: "callFailed",
+  CALLING: "calling",
+  RINGING: "ringing",
+  NOANSWER: "noAnswer",
+  BUSY: "busy",
+  ONGOING: "ongoing",
+  RECONNECTING: "reconnecting",
+  CONNECTIONLOST: "connectionLost",
+  HANGUP: "hangup",
+};
+export const CALLDIRECTION = {
+  INCOMING: "incoming",
+  OUTGOING: "outgoing",
+};
+export const CALLTYPE = {
+  AUDIOCALL: "AudioCall",
+  VIDEOCALL: "VideoCall",
+};
+
 function CallSection() {
   const socket = useContext(SocketContext);
   const { LoggedInUser } = useContext(LoggedInUserContext);
-
+  //states
   const [remoteStream, setRemoteStream] = useState();
   const [localStream, setLocalStream] = useState();
-  const [calling, setCalling] = useState(false);
   const [showVideoScreen, setShowVideoScreen] = useState(false);
-  const [direction, setDirection] = useState("");
-  const [callType, setCallType] = useState("");
 
-  function resetState() {
-    setRemoteStream(null);
-    setLocalStream(null);
-    setCalling(false);
+  /**
+   * *callStates
+   * callStates in outgoing call ["connecting","connected","callFailed","calling","noAnswer" , "busy" , "ongoing" ,"reconnecting", "connectionLost" ,"hangup"]
+   * callStates in incoming call ["ringing","ongoing","reconnecting","connectionLost","hangup"]
+   * * these callSates are in order in they occur.
+   */
+  const [callState, setCallState] = useState(); //
+  const [direction, setDirection] = useState();
+  const [callType, setCallType] = useState(); // AudioCall VideoCall
+  const [callingUser, setCallingUser] = useState(); //object it hold is in this shape {username,firstName,lastName,online,profilePic}
+  const [callStartedTime, setCallStartedTime] = useState(); // new Date();
+
+  const showCallAlert =
+    !(
+      direction === CALLDIRECTION.INCOMING &&
+      callState === CALLSTATES.CONNECTING
+    ) &&
+    callState &&
+    !showVideoScreen;
+
+  const resetStates = () => {
     setShowVideoScreen(false);
-    setDirection("");
-    setCallType("");
-  }
+    setCallState();
+    setRemoteStream();
+    setLocalStream();
+    setDirection();
+    setCallType();
+    setCallingUser();
+    setCallStartedTime();
+  };
 
-  function call(peer, peerId) {
+  const call = useCallback((peer, peerId, callType) => {
+    //call acknowledgement is received form the otherEnd.
     navigator.mediaDevices
-      .getUserMedia({ video: callType === "VideoCall", audio: true })
+      .getUserMedia({ video: callType === CALLTYPE.VIDEOCALL, audio: true })
       .then((stream) => {
         setLocalStream(stream);
-        setShowVideoScreen(true);
+        setShowVideoScreen(callType === CALLTYPE.VIDEOCALL);
         const call = peer.call(peerId, stream);
+        setCallState(CALLSTATES.CALLING); //play calling tone in CallAlert component
         call.on("stream", (remoteStream) => {
-          // Show stream in some <video> element.
-          console.log("got remoteVideo stream");
+          //call is accepted by otherEnd
+          // Show stream in some <video> element if callType === videoCall
           setRemoteStream(remoteStream);
-          setShowVideoScreen(true);
+          setCallStartedTime(new Date()); //start call timer
+          setCallState(CALLSTATES.ONGOING);
         });
       })
       .catch((err) => {
+        setCallState(CALLSTATES.CALLFAILED);
         console.error("Failed to get local stream", err);
       });
-  }
+  }, []);
 
-  function acceptCall(call) {
+  const acceptCall = useCallback((call, callType) => {
     navigator.mediaDevices
-      .getUserMedia({ video: callType === "VideoCall", audio: true })
+      .getUserMedia({ video: callType === CALLTYPE.VIDEOCALL, audio: true })
       .then((stream) => {
         call.answer(stream); // Answer the call with an A/V stream.
         setLocalStream(stream);
         call.on("stream", (remoteStream) => {
+          setCallStartedTime(new Date()); //start call timer
+          setCallState(CALLSTATES.ONGOING);
           // Show stream in some <video> element.
           setRemoteStream(remoteStream);
-          setShowVideoScreen(true);
+          setShowVideoScreen(callType === CALLTYPE.VIDEOCALL);
         });
       })
       .catch((err) => {
+        setCallState(CALLSTATES.CALLFAILED);
         console.error("Failed to get local stream", err);
       });
-  }
+  }, []);
 
   const handleCall = useCallback(
     (e) => {
-      const callDirection = e.detail ? "outgoing" : "incoming";
+      const callDirection = e.detail
+        ? CALLDIRECTION.OUTGOING
+        : CALLDIRECTION.INCOMING;
+      const callType = e.detail?.callType || e.callType;
       setDirection(callDirection);
+      setCallingUser(e.detail?.userInfo || e.caller);
+      setCallType(callType);
+      setCallState(CALLSTATES.CONNECTING); //show CallAlert component
 
       const peer = new Peer(); //creating new peer
       peer.on("open", function (peerId) {
-        if (callDirection === "outgoing") {
-          setCalling(true); //showing the calling popup
-          const userInfo = e.detail.userInfo;
-          const callType = e.detail.callType;
-          setCallType(callType);
-
+        if (callDirection === CALLDIRECTION.OUTGOING) {
+          const userInfo = e.detail.userInfo; //this person
           socket.emit("outgoingCall", peerId, userInfo, callType);
           socket.on(
             "acknowledgedCall",
             (remotePeerId, caller, receiver, ackCallType) => {
               if (
-                caller === LoggedInUser.username &&
+                caller.username === LoggedInUser.username &&
                 receiver === userInfo.username &&
                 ackCallType === callType
               ) {
-                call(peer, remotePeerId);
+                setCallState(CALLSTATES.CONNECTED); //play call connected sound in CallAlert component
+                call(peer, remotePeerId, callType);
               }
             }
           );
         } else {
           setCallType(e.callType);
+          setCallState(CALLSTATES.RINGING); //play ringtone
           socket.emit(
             "callAcknowledged",
             peerId,
@@ -99,38 +151,105 @@ function CallSection() {
         }
       });
 
-      //answer call
-      peer.on("call", (call) => {
-        setCalling(true); //showing the calling popup
+      function callHandler(call) {
+        setCallState(CALLSTATES.RINGING); //play ringtone
         document.addEventListener("callAccepted", () => {
-          acceptCall(call);
+          acceptCall(call, callType);
         });
-      });
+      }
+      //answer call
+      peer.on("call", callHandler);
     },
-    [socket, LoggedInUser]
+    [socket, LoggedInUser, acceptCall, call]
+  );
+
+  //stopping the mic and camera streams.
+  const stopStreams = useCallback(() => {
+    if (remoteStream && localStream) {
+      remoteStream.getTracks().forEach((tracks) => tracks.stop());
+      localStream.getTracks().forEach((tracks) => tracks.stop());
+    }
+  }, [remoteStream, localStream]);
+
+  const endCall = useCallback(
+    function () {
+      if (this !== socket) {
+        socket.emit("callEnd", callingUser.username);
+      } //if it is called by socket.on() no need to emit. This happens when otherEnd ends the call. So no need to tell otherEnd the call has ended.
+      setCallState(CALLSTATES.HANGUP);
+      stopStreams();
+      setTimeout(resetStates, 2000); //wait 2 sec before everything is clear so callEnd sound and callended info can be shown.
+    },
+    [socket, callingUser, stopStreams]
   );
 
   useEffect(() => {
+    switch (callState) {
+      //for callFailed
+      case CALLSTATES.CONNECTING:
+        var callFailTimeOut = setTimeout(() => {
+          setCallState(CALLSTATES.CALLFAILED);
+          setTimeout(resetStates, 3000);
+        }, 10000);
+        break;
+
+      //for noAnswer
+      case CALLSTATES.RINGING:
+        var noAnswerTimeOut = setTimeout(() => {
+          socket.emit("noAnswer", callingUser.username);
+          resetStates();
+        }, 3000);
+        break;
+
+      default:
+        break;
+    }
+
+    return () => {
+      clearTimeout(callFailTimeOut);
+      clearTimeout(noAnswerTimeOut);
+    };
+  }, [socket, callState, callingUser]);
+
+  useEffect(() => {
     socket.on("incomingCall", handleCall);
+    socket.on("callEnd", endCall);
+    socket.on("noAnswer");
 
     document.addEventListener("call", handleCall);
+    document.addEventListener("callEnd", endCall);
     return () => {
       document.removeEventListener("call", handleCall);
+      document.removeEventListener("callEnd", endCall);
+      socket.off("incomingCall", handleCall);
+      socket.off("callEnd", endCall);
     };
-  }, [socket, handleCall]);
+  }, [socket, handleCall, endCall]);
 
   return (
     <>
-      {calling && !showVideoScreen ? (
-        <CallAlert direction={direction} callType={callType} />
-      ) : null}
+      {showCallAlert && (
+        <CallAlert
+          direction={direction}
+          callType={callType}
+          callingUser={callingUser}
+          callState={callState}
+          callStartedTime={callStartedTime}
+          //AudioCall is handled in this component
+          remoteStream={remoteStream}
+          localStream={localStream}
+        />
+      )}
 
-      {calling && showVideoScreen ? (
+      {showVideoScreen && (
         <VideoCallScreen
           localStream={localStream}
           remoteStream={remoteStream}
+          callState={callState}
+          callingUser={callingUser}
+          callStartedTime={callStartedTime}
         />
-      ) : null}
+      )}
     </>
   );
 }
