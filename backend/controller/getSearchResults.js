@@ -53,7 +53,11 @@ async function getSearchResults(req, res) {
               lastName: 1,
               profilePic: 1,
               online: 1,
-              friend: { $in: [thisUser, "$friendList"] },
+              isFriend: { $in: [thisUser, "$friendList"] },
+              hasSentFriendRequest: {
+                $in: [thisUser, "$friendRequestsPending"],
+              },
+              isRequestPending: { $in: [thisUser, "$friendRequests"] },
               mutualFriends: {
                 $setIntersection: ["$friendList", thisUserFriendList],
               },

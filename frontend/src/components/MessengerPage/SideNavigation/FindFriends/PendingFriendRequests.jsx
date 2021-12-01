@@ -38,7 +38,7 @@ function PendingFriendRequests({update,changed}) {
             <People
               key={Requested._id}
               person={Requested}
-              type="pending"
+              type="pendingRequest"
               update={update}
             />
           );

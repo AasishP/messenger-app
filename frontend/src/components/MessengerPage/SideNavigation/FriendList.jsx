@@ -34,8 +34,15 @@ function FriendList() {
       )}
       {!loading &&
         friendList.length !== 0 &&
-        friendList.map((friend) => {
-          return <People key={friend._id} person={friend} update={update} />;
+        friendList.map((person) => {
+          return (
+            <People
+              key={person._id}
+              person={person}
+              type="friend"
+              update={update}
+            />
+          );
         })}
     </div>
   );

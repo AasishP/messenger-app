@@ -17,7 +17,7 @@ function PeopleYouMayKnow({ update, changed }) {
   }, [changed]);
 
   return (
-  <Box mt="1em">
+    <Box mt="1em">
       <Typography variant="h6" align="center" color="primary">
         <EmojiPeople />
         People You May Know
@@ -36,7 +36,7 @@ function PeopleYouMayKnow({ update, changed }) {
             <People
               key={Person._id}
               person={Person}
-              type="send"
+              type="unknown"
               update={update}
             />
           );

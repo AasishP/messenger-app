@@ -27,7 +27,12 @@ function SearchResults({ searchText, setShowSearchResults }) {
   const theme = useTheme();
   const classes = useStyles();
   const [searchResults, setSearchResults] = useState([]);
+  const [changed, setChanged] = useState();
   const searchResultsContainer = useRef();
+
+  function update() {
+    setChanged(Math.random());
+  }
 
   useEffect(() => {
     const cancelTokenSource = axiosMain.CancelToken.source();
@@ -48,7 +53,7 @@ function SearchResults({ searchText, setShowSearchResults }) {
     return () => {
       cancelTokenSource.cancel();
     };
-  }, [searchText]);
+  }, [changed, searchText]);
 
   return (
     <Box
@@ -72,15 +77,22 @@ function SearchResults({ searchText, setShowSearchResults }) {
 
       {/* friends */}
       {searchResults?.map((person) => {
-        if (person.friend) {
-          return <People key={person._id} person={person} type="friend" />;
+        if (person.isFriend) {
+          return (
+            <People
+              key={person._id}
+              person={person}
+              type="friend"
+              update={update}
+            />
+          );
         }
         return null;
       })}
 
       {/* more People (unknown persons) */}
       {searchResults.some((person) => {
-        return !person.friend;
+        return !person.isFriend;
       }) ? (
         <>
           <Typography
@@ -95,8 +107,32 @@ function SearchResults({ searchText, setShowSearchResults }) {
             More People
           </Typography>
           {searchResults?.map((person) => {
-            if (!person.friend) {
-              return <People key={person._id} type="unknown" person={person} />;
+            if (person.isRequestPending)
+              return (
+                <People
+                  key={person._id}
+                  type="pendingRequest"
+                  person={person}
+                />
+              );
+            if (person.hasSentFriendRequest)
+              return (
+                <People
+                  key={person._id}
+                  type="friendRequest"
+                  person={person}
+                  update={update}
+                />
+              );
+            if (!person.isFriend) {
+              return (
+                <People
+                  key={person._id}
+                  type="unknown"
+                  person={person}
+                  update={update}
+                />
+              );
             }
             return null;
           })}

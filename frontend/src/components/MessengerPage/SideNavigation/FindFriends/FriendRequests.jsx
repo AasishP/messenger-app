@@ -36,7 +36,7 @@ function FriendRequests({ update, changed }) {
             <People
               key={Requester._id}
               person={Requester}
-              type="request"
+              type="friendRequest"
               update={update}
             />
           );
