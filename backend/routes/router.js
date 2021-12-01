@@ -12,6 +12,7 @@ const uploadProfilePic = require("../controller/uploadProfilePic");
 const User = require("../models/user");
 const getMessages = require("../controller/getMessages");
 const getConversations = require("../controller/getConversations");
+const getSearchResults = require("../controller/getSearchResults");
 const route = express.Router();
 
 //registration endpoint
@@ -57,5 +58,8 @@ route.get("/api/conversations", authenticateUser, getConversations);
 
 //get messages
 route.get("/api/messages/:with", authenticateUser, getMessages);
+
+//search people
+route.get("/api/:search?", authenticateUser, getSearchResults);
 
 module.exports = route;

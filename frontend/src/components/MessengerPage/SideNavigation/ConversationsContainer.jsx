@@ -17,7 +17,7 @@ function ConversationsContainer() {
     const message = msg.detail ? msg.detail : msg;
     setConversations((prevConversations) => {
       const index = prevConversations.findIndex((conversation) => {
-        if (conversation.with === message.recipient) {
+        if (conversation?.with === message.recipient) {
           return true;
         }
         return false;
@@ -54,9 +54,7 @@ function ConversationsContainer() {
       {conversations.map((conversation) => (
         <Conversation
           key={conversation._id}
-          lastMessage={
-            conversation.messages[conversation.messages.length - 1]
-          }
+          lastMessage={conversation.messages[conversation.messages.length - 1]}
           conversationWith={conversation.with}
         />
       ))}

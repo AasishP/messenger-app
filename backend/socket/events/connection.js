@@ -2,7 +2,7 @@ const updateUserOnlineState = require("../../controller/updateUserState");
 const handleDisconnect = require("./disconnect");
 const handleMessage = require("./message");
 const handleTyping = require("./typing");
-const { handleCall, handleCallAcknowledgement } = require("./call");
+const { handleCall, handleCallAcknowledgement, endCall } = require("./call");
 
 function handleConnection(socket) {
   const connectedUser = socket.request.verifiedUser.username;
@@ -18,6 +18,8 @@ function handleConnection(socket) {
   socket.on("outgoingCall", handleCall);
 
   socket.on("callAcknowledged", handleCallAcknowledgement);
+
+  socket.on("callEnd", endCall);
 
   //disconnect
   socket.on("disconnect", (reason) => {

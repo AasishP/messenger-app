@@ -73,12 +73,12 @@ function SearchResults({ searchText, setShowSearchResults }) {
       {/* friends */}
       {searchResults?.map((person) => {
         if (person.friend) {
-          return <People key={person._id} person={person} />;
+          return <People key={person._id} person={person} type="friend" />;
         }
         return null;
       })}
 
-      {/* more People */}
+      {/* more People (unknown persons) */}
       {searchResults.some((person) => {
         return !person.friend;
       }) ? (
@@ -96,7 +96,7 @@ function SearchResults({ searchText, setShowSearchResults }) {
           </Typography>
           {searchResults?.map((person) => {
             if (!person.friend) {
-              return <People key={person._id} type="send" person={person} />;
+              return <People key={person._id} type="unknown" person={person} />;
             }
             return null;
           })}

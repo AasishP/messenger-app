@@ -227,7 +227,7 @@ function People({ person, type, update }) {
 
   function getButton(type) {
     switch (type) {
-      case "request":
+      case "friendRequest": 
         return (
           <Box ml="auto" display="flex">
             {/* accept Button */}
@@ -241,7 +241,7 @@ function People({ person, type, update }) {
             </IconButton>
           </Box>
         );
-      case "send":
+      case "unknown": //not friend
         return (
           // add friend button
           <IconButton
@@ -251,7 +251,7 @@ function People({ person, type, update }) {
             <PersonAdd />
           </IconButton>
         );
-      case "pending":
+      case "pendingRequest":
         return (
           // cancle request button
           <Button
@@ -263,8 +263,10 @@ function People({ person, type, update }) {
             Cancel
           </Button>
         );
-      default:
+      case "friend":
         return <FriendUnFriendBtn unFriend={unFriend} />;
+      default:
+        return null;
     }
   }
 
