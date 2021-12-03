@@ -84,11 +84,10 @@ function MessagesContainer({ userInfo }) {
               seen={msg.seen}
               timestamp={msg.timestamp}
               prevMsgTimestamp={messages[index - 1]?.timestamp||0}
-              messageType={msg.from === userInfo.username ? "from" : "to"}
+              direction={msg.from === userInfo.username ? "from" : "to"}
               userInfo={msg.from === userInfo.username ? userInfo : null}
             >
               {msg.text}
-              {msg.media ? msg.media : null}
             </Message>
           );
         })}

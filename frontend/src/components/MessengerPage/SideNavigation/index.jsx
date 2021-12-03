@@ -8,11 +8,12 @@ import { useTheme } from "@material-ui/styles";
 
 const useStyles = makeStyles((theme) => ({
   root: {
+    position: "relative",
     display: "flex",
     flexDirection: "column",
     maxWidth: "400px",
     minWidth: "400px",
-    maxHeight: "100vh",
+    height: "100vh",
     [theme.breakpoints.down("sm")]: {
       minWidth: "100%",
     },

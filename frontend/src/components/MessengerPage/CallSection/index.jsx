@@ -154,7 +154,7 @@ function CallSection() {
       function callHandler(call) {
         setCallState(CALLSTATES.RINGING); //play ringtone
         document.addEventListener("callAccepted", () => {
-          acceptCall(call, callType);
+          acceptCall(peer, call, callType);
         });
       }
       //answer call
@@ -165,22 +165,22 @@ function CallSection() {
 
   //stopping the mic and camera streams.
   const stopStreams = useCallback(() => {
-    if (remoteStream && localStream) {
-      remoteStream.getTracks().forEach((tracks) => tracks.stop());
-      localStream.getTracks().forEach((tracks) => tracks.stop());
-    }
+    remoteStream?.getTracks().forEach((tracks) => tracks.stop());
+    localStream?.getTracks().forEach((tracks) => tracks.stop());
   }, [remoteStream, localStream]);
 
   const endCall = useCallback(
     function () {
       if (this !== socket) {
-        socket.emit("callEnd", callingUser.username);
+        callState === CALLSTATES.RINGING
+          ? socket.emit("callRejected", callingUser.username)
+          : socket.emit("callEnd", callingUser.username);
       } //if it is called by socket.on() no need to emit. This happens when otherEnd ends the call. So no need to tell otherEnd the call has ended.
       setCallState(CALLSTATES.HANGUP);
       stopStreams();
       setTimeout(resetStates, 2000); //wait 2 sec before everything is clear so callEnd sound and callended info can be shown.
     },
-    [socket, callingUser, stopStreams]
+    [socket, callingUser, callState, stopStreams]
   );
 
   useEffect(() => {
@@ -200,6 +200,11 @@ function CallSection() {
           resetStates();
         }, 3000);
         break;
+      case CALLSTATES.NOANSWER:
+      case CALLSTATES.BUSY:
+        setTimeout(resetStates, 3000);
+        stopStreams();
+        break;
 
       default:
         break;
@@ -209,12 +214,20 @@ function CallSection() {
       clearTimeout(callFailTimeOut);
       clearTimeout(noAnswerTimeOut);
     };
-  }, [socket, callState, callingUser]);
+  }, [socket, callState, callingUser, stopStreams]);
 
   useEffect(() => {
     socket.on("incomingCall", handleCall);
     socket.on("callEnd", endCall);
-    socket.on("noAnswer");
+    socket.on("noAnswer", () => {
+      setCallState(CALLSTATES.NOANSWER);
+    });
+    socket.on("callRejected", () => {
+      setCallState(CALLSTATES.BUSY);
+    });
+    socket.on("userBusy", (busyUser) => {
+      callingUser === busyUser && setCallState(CALLSTATES.BUSY);
+    });
 
     document.addEventListener("call", handleCall);
     document.addEventListener("callEnd", endCall);
@@ -224,7 +237,7 @@ function CallSection() {
       socket.off("incomingCall", handleCall);
       socket.off("callEnd", endCall);
     };
-  }, [socket, handleCall, endCall]);
+  }, [socket,callingUser, handleCall, endCall]);
 
   return (
     <>

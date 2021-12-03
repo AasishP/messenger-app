@@ -1,21 +1,18 @@
-import {
-  Box,
-  Divider,
-  makeStyles,
-  Typography,
-  useTheme,
-} from "@material-ui/core";
+import { Box, makeStyles, Typography, useTheme } from "@material-ui/core";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "../../../../api";
 import axiosMain from "axios";
 import People from "../People";
 
 const useStyles = makeStyles((theme) => ({
-  searchResults: {
+  searchResultsContainer: {
     position: "absolute",
-    width: "100%",
-    top: "100%",
+    overflowY: "scroll",
+    maxHeight: "50vh",
+    width: "calc(100% - 2em)",
+    margin: "0 1em",
     left: "0",
+    padding: "0.5em 0.2em 0.5em 0.5em",
     backgroundColor: theme.palette.background.paper,
     borderRadius: "0 0 10px 10px",
     zIndex: "1000",
@@ -23,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SearchResults({ searchText, setShowSearchResults }) {
+function SearchResults({ searchText }) {
   const theme = useTheme();
   const classes = useStyles();
   const [searchResults, setSearchResults] = useState([]);
@@ -57,14 +54,9 @@ function SearchResults({ searchText, setShowSearchResults }) {
 
   return (
     <Box
-      className={classes.searchResults}
+      className={classes.searchResultsContainer}
       ref={searchResultsContainer}
-      onBlur={() => {
-        setShowSearchResults(false);
-      }}
     >
-      <Divider size="large" />
-
       {searchText && !searchResults.length ? (
         <Typography
           style={{ margin: "0.5em" }}
@@ -99,9 +91,9 @@ function SearchResults({ searchText, setShowSearchResults }) {
             variant="body1"
             style={{
               fontWeight: "bold",
-              marginLeft: "0.7em",
-              marginTop: "0.3em",
-              color: theme.palette.grey[800],
+              margin: "0.4em 0",
+              marginLeft: "0.8em",
+              color: theme.palette.primary.main,
             }}
           >
             More People
@@ -113,6 +105,7 @@ function SearchResults({ searchText, setShowSearchResults }) {
                   key={person._id}
                   type="pendingRequest"
                   person={person}
+                  update={update}
                 />
               );
             if (person.hasSentFriendRequest)

@@ -5,7 +5,12 @@ import SearchResults from "./SearchResults";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    position: "relative",
+    margin: "1em",
+  },
+  searchForm: {
+    display: "flex",
+    paddingLeft: "1em",
+    width: "100%",
   },
   searchInput: {
     color: theme.palette.text.primary,
@@ -30,25 +35,33 @@ function SearchBox() {
     setSearchText(e.target.value);
   }
 
+  function handleSubmit(e) {
+    e.preventDefault();
+    searchText && setShowSearchResults(true);
+  }
+
   useEffect(() => {
     searchText ? setShowSearchResults(true) : setShowSearchResults(false);
   }, [searchText]);
 
   return (
-    <form>
-      <Box
-        className={classes.root}
-        m="1em"
-        pl="1em"
-        display="flex"
-        alignItems="center"
-        borderRadius="5px"
-        boxShadow="rgb(145 158 171 / 10%) 0px 2px 5px 3px"
-      >
+    <Box
+      className={classes.root}
+      borderRadius="5px"
+      boxShadow="rgb(145 158 171 / 10%) 0px 2px 5px 3px"
+      tabIndex="-1"
+      onFocus={() => {
+        searchText && !showSearchResults && setShowSearchResults(true);
+      }}
+    >
+      <form className={classes.searchForm} onSubmit={handleSubmit}>
         <input
           className={classes.searchInput}
           placeholder="Search..."
           value={searchText}
+          onFocus={() => {
+            searchText && setShowSearchResults(true);
+          }}
           onChange={(e) => {
             handleChange(e);
           }}
@@ -56,14 +69,13 @@ function SearchBox() {
         <IconButton type="submit">
           <Search />
         </IconButton>
-        {showSearchResults ? (
-          <SearchResults
-            searchText={searchText}
-            setShowSearchResults={setShowSearchResults}
-          />
-        ) : null}
-      </Box>
-    </form>
+      </form>
+      {showSearchResults ? (
+        <SearchResults
+          searchText={searchText}
+        />
+      ) : null}
+    </Box>
   );
 }
 

@@ -23,6 +23,7 @@ function Message({
   prevMsgTimestamp,
   timestamp,
   seen,
+  direction,
   messageType,
   userInfo,
 }) {
@@ -59,14 +60,14 @@ function Message({
     }
   }
 
-  function getBorderRadius(messageType) {
-    if (messageType === "to") {
+  function getBorderRadius(direction) {
+    if (direction === "to") {
       return "20px 0px 20px 20px";
     }
     return "0px 20px 20px 20px";
   }
-  function getColor(messageType) {
-    if (messageType === "to") {
+  function getColor(direction) {
+    if (direction === "to") {
       return {
         background: theme.palette.primary.main,
         text: theme.palette.getContrastText(theme.palette.primary.main),
@@ -89,12 +90,12 @@ function Message({
 
       <Box
         display="flex"
-        justifyContent={messageType === "to" ? "flex-end" : "flex-start"}
+        justifyContent={direction === "to" ? "flex-end" : "flex-start"}
         mx="2em"
         my="0.5em"
         alignItems="center"
       >
-        {messageType === "from" ? (
+        {direction === "from" ? (
           <Avatar
             className={classes.avatar}
             alt={userInfo.username?.toUpperCase()}
@@ -104,10 +105,10 @@ function Message({
 
         <Box
           maxWidth="60%"
-          borderRadius={getBorderRadius(messageType)}
+          borderRadius={getBorderRadius(direction)}
           boxShadow="rgb(145 158 171 / 24%) 0px 8px 16px 0px"
-          bgcolor={getColor(messageType).background}
-          mx={messageType === "from" ? "2em" : 0}
+          bgcolor={getColor(direction).background}
+          mx={direction === "from" ? "2em" : 0}
           p="1em"
         >
           <Typography
@@ -119,8 +120,8 @@ function Message({
               overflowWrap: "break-word",
               wordWrap: "break-word",
               color:
-                messageType === "to"
-                  ? getColor(messageType).text
+                direction === "to"
+                  ? getColor(direction).text
                   : theme.palette.text.primary,
             }}
           >

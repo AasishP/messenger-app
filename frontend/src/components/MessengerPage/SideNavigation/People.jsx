@@ -100,7 +100,7 @@ function People({ person, type, update }) {
 
   //open messages
   function openMessages() {
-    if (!type) return history.push(`/messenger/${person.username}`);
+    if (type==="friend") return history.push(`/messenger/${person.username}`);
   }
 
   //send FriendRequest

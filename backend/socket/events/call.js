@@ -23,9 +23,24 @@ function handleCallAcknowledgement(peerId, caller, receiver, callType) {
     .emit("acknowledgedCall", peerId, caller, receiver, callType);
 }
 
-function endCall(callingUser) {
+function handleNoAnswer(callingUser) {
+  const socket = this;
+  socket.to(callingUser).emit("noAnswer");
+}
+
+function handleCallEnd(callingUser) {
   const socket = this;
   socket.to(callingUser).emit("callEnd");
 }
+function handleCallReject(callingUser) {
+  const socket = this;
+  socket.to(callingUser).emit("callRejected");
+}
 
-module.exports = { handleCall, handleCallAcknowledgement, endCall };
+module.exports = {
+  handleCall,
+  handleCallAcknowledgement,
+  handleNoAnswer,
+  handleCallEnd,
+  handleCallReject,
+};
