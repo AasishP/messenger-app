@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, IconButton, makeStyles } from "@material-ui/core";
-import { Search } from "@material-ui/icons";
 import SearchResults from "./SearchResults";
+import { Search } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -45,37 +45,35 @@ function SearchBox() {
   }, [searchText]);
 
   return (
-    <Box
-      className={classes.root}
-      borderRadius="5px"
-      boxShadow="rgb(145 158 171 / 10%) 0px 2px 5px 3px"
-      tabIndex="-1"
-      onFocus={() => {
-        searchText && !showSearchResults && setShowSearchResults(true);
-      }}
-    >
-      <form className={classes.searchForm} onSubmit={handleSubmit}>
-        <input
-          className={classes.searchInput}
-          placeholder="Search..."
-          value={searchText}
-          onFocus={() => {
-            searchText && setShowSearchResults(true);
-          }}
-          onChange={(e) => {
-            handleChange(e);
-          }}
-        />
-        <IconButton type="submit">
-          <Search />
-        </IconButton>
-      </form>
-      {showSearchResults ? (
-        <SearchResults
-          searchText={searchText}
-        />
-      ) : null}
-    </Box>
+    <>
+      <Box
+        className={classes.root}
+        borderRadius="5px"
+        boxShadow="rgb(145 158 171 / 10%) 0px 2px 5px 3px"
+        tabIndex="-1"
+        onFocus={() => {
+          searchText && !showSearchResults && setShowSearchResults(true);
+        }}
+      >
+        <form className={classes.searchForm} onSubmit={handleSubmit}>
+          <input
+            className={classes.searchInput}
+            placeholder="Search..."
+            value={searchText}
+            onFocus={() => {
+              searchText && setShowSearchResults(true);
+            }}
+            onChange={(e) => {
+              handleChange(e);
+            }}
+          />
+          <IconButton type="submit">
+            <Search />
+          </IconButton>
+        </form>
+        {showSearchResults ? <SearchResults searchText={searchText} /> : null}
+      </Box>
+    </>
   );
 }
 

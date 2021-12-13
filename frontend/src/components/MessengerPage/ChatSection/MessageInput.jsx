@@ -22,6 +22,8 @@ const useStyles = makeStyles({
     display: "flex",
     flexWrap: "wrap",
     padding: "0.5em",
+    maxHeight: "25vh",
+    overflowY: "scroll",
   },
   selectedImage: {
     width: "100%",
@@ -95,14 +97,54 @@ function MessageInput({ updateMessages }) {
 
   function sendMessage(e) {
     e.preventDefault();
+    if (selectedImages.length > 0) {
+      //this message object is only for showing in frontend which contains all medias in same message object
+      const clientSideMsg = {
+        recipient,
+        text: textFieldValue,
+        media: {
+          images: selectedImages,
+        },
+      };
+      updateMessages(clientSideMsg);
+      dispatchSendMessage(clientSideMsg); //firing sendMessage event.
+      setTyping("stop");
+      setTextFieldValue("");
+      setSelectedImages([]);
+
+      Socket.emit(
+        "sendingMediaMessage",
+        {
+          recipient,
+          text: textFieldValue,
+          mediaType: "image",
+          mediaCount: selectedImages.length,
+        },
+        (token) => {
+          //this is for uploding to server
+          selectedImages.forEach((image) => {
+            const message = {
+              token,
+              recipient,
+              media: {
+                image,
+              },
+            };
+            Socket.emit("send-message", message);
+          });
+        }
+      );
+
+      return;
+    }
 
     if (textFieldValue) {
       const message = {
-        _id: Math.random(),
         recipient,
         text: textFieldValue,
       };
       updateMessages(message);
+      console.log("this ran");
 
       Socket.emit("send-message", message);
 
@@ -141,7 +183,7 @@ function MessageInput({ updateMessages }) {
         <Box className={classes.selectedItemsContainer}>
           {selectedImages.map((image, index) => {
             return (
-              <div className={classes.imageContainer}>
+              <div key={index} className={classes.imageContainer}>
                 <button
                   className={classes.removeBtn}
                   onClick={() => {

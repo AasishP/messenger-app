@@ -28,7 +28,7 @@ async function verifyUsernameAndPassword(username, password) {
         return false;
       }
     } else {
-      return true;
+      return false;
     }
   } else {
     return false;

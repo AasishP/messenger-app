@@ -2,6 +2,7 @@ const updateUserOnlineState = require("../../controller/updateUserState");
 const handleDisconnect = require("./disconnect");
 const handleMessage = require("./message");
 const handleTyping = require("./typing");
+const initializeMediaMessage = require("./initializeMediaMessage.js");
 const {
   handleCall,
   handleCallAcknowledgement,
@@ -18,6 +19,8 @@ function handleConnection(socket) {
   socket.join(connectedUser); //creating a personal room with which other can communicate with me directly
 
   socket.on("send-message", handleMessage); //client sent a message.
+
+  socket.on("sendingMediaMessage", initializeMediaMessage);
 
   socket.on("typing", handleTyping); //client sent a message.
 

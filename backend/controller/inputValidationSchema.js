@@ -2,11 +2,11 @@
 
 const usernameSchema = /[A-Za-z0-9._]{4,255}$/;
 /* anything in range [A-Z] [a-z] [0-9] _ and should have
-    length {min,max}{4,128}
+    length {min,max}{4,255}
 */
 const passwordSchema = /[\S]{6,255}$/;
 /* [\S] means anything except whitespace characters and
-    should have length {min,max}{6,128}
+    should have length {min,max}{6,255}
 */
 const firstNameSchema = /[A-Za-z]{3,255}$/;
 /* only alpha characters and should have 

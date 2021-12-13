@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../api";
+import axiosMain from "axios";
 import Conversation from "./Conversation";
 
 function ConversationsContainer() {
@@ -28,19 +29,28 @@ function ConversationsContainer() {
     });
   }
 
-  async function getConversations() {
-    const res = await axios.get(`/conversations`);
-    setConversations(res.data);
+  async function getConversations(source) {
+    axios
+      .get(`/conversations`, {
+        cancelToken: source.token,
+      })
+      .then((res) => {
+        setConversations(res.data);
+      });
   }
+
   useEffect(() => {
-    getConversations();
-
+    const CancelToken = axiosMain.CancelToken; //axiosMain is axios
+    const source = CancelToken.source();
+    getConversations(source);
     onMessageSend(moveRecentConversationToTop);
-
     return () => {
+      // Cancel request
+      source.cancel();
       offMessageSend(moveRecentConversationToTop);
     };
   }, []);
+
   return (
     <div
       style={{
@@ -54,7 +64,10 @@ function ConversationsContainer() {
       {conversations.map((conversation) => (
         <Conversation
           key={conversation._id}
-          lastMessage={conversation.messages[conversation.messages.length - 1]}
+          lastMessage={
+            conversation.messages.length &&
+            conversation.messages[conversation.messages.length - 1]
+          }
           conversationWith={conversation.with}
         />
       ))}

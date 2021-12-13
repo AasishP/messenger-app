@@ -20,11 +20,17 @@ const userSchema = new mongoose.Schema(
         with: { type: String, required: true },
         messages: [
           {
-            from: { type: String, required: true},
+            from: { type: String, required: true },
             timestamp: { type: Date, default: Date.now() },
             seen: { type: Boolean, default: false },
             text: { type: String },
-            media: { type: String },
+            media: {
+              uploading:{type:Boolean},
+              images: [{ type: String }],
+              videos: [{ type: String }],
+              links: [{ type: String }],
+              files: [{ type: String }],
+            },
           },
         ],
       },

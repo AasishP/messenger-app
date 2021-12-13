@@ -43,7 +43,7 @@ function ChatSection() {
       bgcolor={theme.palette.background.default}
     >
       <Header userInfo={userInfo} />
-      <MessagesContainer userInfo={userInfo} />
+      <MessagesContainer otherEndUser={userInfo} />
     </Box>
   );
 }

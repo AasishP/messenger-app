@@ -6,7 +6,7 @@ import MessageInput from "./MessageInput";
 import axios from "../../../api";
 import TypingIndicator from "./TypingIndicator";
 
-function MessagesContainer({ userInfo }) {
+function MessagesContainer({ otherEndUser }) {
   const messageContainer = useRef();
 
   //contexts
@@ -24,6 +24,7 @@ function MessagesContainer({ userInfo }) {
   }
 
   async function getMessages(otherSide) {
+    if(!otherSide) return
     const res = await axios.get(`/messages/${otherSide}`);
     const messages = res.data.messages;
     messages &&
@@ -39,15 +40,15 @@ function MessagesContainer({ userInfo }) {
   useEffect(() => {
     //updateMessages wrapper
     function addMessage(msg) {
-      updateMessages(msg, userInfo.username);
+      updateMessages(msg, otherEndUser.username);
     }
 
-    socket.on("receive-message", addMessage);
+    socket.on("receive-message", addMessage);//this will receive msg and pass it into addMessage function
 
     return () => {
       socket.off("receive-message", addMessage);
     };
-  }, [socket, userInfo]);
+  }, [socket, otherEndUser]);
 
   useEffect(() => {
     //scrolling to the buttom after the message is received.
@@ -55,9 +56,9 @@ function MessagesContainer({ userInfo }) {
   }, [messages, typing]);
 
   useEffect(() => {
-    getMessages(userInfo.username);
+    otherEndUser && getMessages(otherEndUser.username);
     socket.on("typing", (state, user) => {
-      if (user === userInfo.username) {
+      if (user === otherEndUser.username) {
         setTyping({ state, user });
       }
     });
@@ -67,7 +68,7 @@ function MessagesContainer({ userInfo }) {
 
       resetMessages();
     }; //clear all messages on unmount.
-  }, [userInfo, socket]);
+  }, [otherEndUser, socket]);
 
   return (
     <>
@@ -77,21 +78,17 @@ function MessagesContainer({ userInfo }) {
           overflowY: "scroll",
         }}
       >
-        {messages.map((msg,index) => {
+        {messages.map((msg, index) => {
           return (
             <Message
               key={msg._id || Math.random() * 100000}
-              seen={msg.seen}
-              timestamp={msg.timestamp}
-              prevMsgTimestamp={messages[index - 1]?.timestamp||0}
-              direction={msg.from === userInfo.username ? "from" : "to"}
-              userInfo={msg.from === userInfo.username ? userInfo : null}
-            >
-              {msg.text}
-            </Message>
+              msg={msg}
+              prevMsgTimestamp={messages[index - 1]?.timestamp || 0}
+              otherEndUser={otherEndUser}
+            />
           );
         })}
-        {typing.state === "start" && typing.user === userInfo.username ? (
+        {typing.state === "start" && typing.user === otherEndUser.username ? (
           <TypingIndicator />
         ) : null}
       </Box>

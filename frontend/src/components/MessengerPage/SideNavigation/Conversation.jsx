@@ -215,7 +215,11 @@ function Conversation({ lastMessage, conversationWith }) {
             : "you: "}
 
           {/*message text */}
-          {recentMessage.text}
+          {recentMessage.text ||
+            ((recentMessage.media.images.length ||
+              recentMessage.media.videos.length ||
+              recentMessage.media.files.length) &&
+              "sent an attatchment!")}
         </Typography>
       </Box>
 
