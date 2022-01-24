@@ -9,8 +9,7 @@ require("dotenv").config(); //loading environment variables
 
 const app = express();
 
-
-const httpServer = http.createServer( app);
+const httpServer = http.createServer(app);
 
 const io = require("socket.io")(httpServer, {
   cors: {

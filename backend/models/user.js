@@ -1,5 +1,24 @@
 const mongoose = require("mongoose");
 
+const messageSchema = new mongoose.Schema({
+  from: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now() },
+  seen: { type: Boolean, default: false },
+  text: { type: String },
+  media: {
+    uploading: { type: Boolean },
+    images: [{ type: String }],
+    videos: [{ type: String }],
+    links: [{ type: String }],
+    files: [{ type: String }],
+  },
+});
+
+const conversationSchema = new mongoose.Schema({
+  with: { type: String, required: true },
+  messages: [messageSchema],
+});
+
 const userSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: true },
@@ -15,26 +34,7 @@ const userSchema = new mongoose.Schema(
     friendList: [{ type: String }],
     friendRequests: [{ type: String }],
     friendRequestsPending: [{ type: String }], // friendRequest sent but not accepted yet.
-    conversations: [
-      {
-        with: { type: String, required: true },
-        messages: [
-          {
-            from: { type: String, required: true },
-            timestamp: { type: Date, default: Date.now() },
-            seen: { type: Boolean, default: false },
-            text: { type: String },
-            media: {
-              uploading:{type:Boolean},
-              images: [{ type: String }],
-              videos: [{ type: String }],
-              links: [{ type: String }],
-              files: [{ type: String }],
-            },
-          },
-        ],
-      },
-    ],
+    conversations: [conversationSchema],
   },
   {
     collection: "users",

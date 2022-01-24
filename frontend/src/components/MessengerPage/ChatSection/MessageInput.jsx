@@ -144,7 +144,6 @@ function MessageInput({ updateMessages }) {
         text: textFieldValue,
       };
       updateMessages(message);
-      console.log("this ran");
 
       Socket.emit("send-message", message);
 

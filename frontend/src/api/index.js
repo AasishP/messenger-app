@@ -10,6 +10,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use((request) => {
   if (request.url.includes("/login") && request.data) {
+    //this is the case if the login is performed with username and password which is contained in the request.data
     return request;
   }
   if (!request.url.includes("/userinfo")) {

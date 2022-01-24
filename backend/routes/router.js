@@ -30,7 +30,7 @@ route.post("/api/login", authenticateUser, async (req, res) => {
     newUser: 1,
   });
   res.send(result);
-});
+});             
 
 // logout endpoint
 route.delete("/api/logout", authenticateUser, logout);

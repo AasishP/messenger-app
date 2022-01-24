@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const colors = require("colors");
 const { usernameSchema, passwordSchema } = require("./inputValidationSchema");
 
 //=========================== authentication with username and password ==================================
