@@ -6,7 +6,7 @@ import {
   useTheme,
 } from "@material-ui/core";
 import moment from "moment";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MediaContent from "./MediaContent";
 
 const useStyles = makeStyles((theme) => ({
@@ -22,6 +22,15 @@ const useStyles = makeStyles((theme) => ({
 function Message({ prevMsgTimestamp, msg, otherEndUser }) {
   const theme = useTheme();
   const classes = useStyles();
+  const [message, setMessage] = useState(msg);
+
+  useEffect(() => {
+    if (msg.mediaMessageResponse) {
+      msg.mediaMessageResponse.then((response) => {
+        setMessage(response.data);
+      });
+    }
+  }, [msg]);
 
   const msgDirection = msg.from === otherEndUser.username ? "from" : "to";
 
@@ -122,8 +131,15 @@ function Message({ prevMsgTimestamp, msg, otherEndUser }) {
           >
             {msg.text}
           </Typography>
-          {msg.media && console.log(msg)}
-          {msg.media && <MediaContent media={msg.media} />}
+          {(message.media.images.length > 0 ||
+            message.media.videos.length > 0 ||
+            message.media.files.length > 0) && (
+            <MediaContent
+              media={message.media}
+              isUploading={!!message.mediaMessageResponse}
+              msgTempId={message.msgTempId}
+            />
+          )}
         </Box>
       </Box>
     </Box>

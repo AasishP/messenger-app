@@ -54,6 +54,7 @@ function Header({ userInfo }) {
   useEffect(() => {
     //updateOnlineState
     function updateOnlineState(username, state) {
+      console.log("informed");
       username === userInfo?.username && setOnline(state);
     }
 

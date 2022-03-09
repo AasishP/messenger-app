@@ -11,7 +11,7 @@ async function getFriendRequests(req, res) {
         from: "users",
         localField:
           type === "pending" ? "friendRequestsPending" : "friendRequests",
-        foreignField: "username",
+        foreignField: "_id",
         as: "requestingPersonsInfo",
       },
     },
@@ -27,7 +27,7 @@ async function getFriendRequests(req, res) {
     },
     {
       $addFields: {
-        "requestingPersonsInfo.mutualFriends": {
+        "requestingPersonsInfo.mutualFriendsId": {
           $setIntersection: [
             "$friendList",
             "$requestingPersonsInfo.friendList",
@@ -35,8 +35,18 @@ async function getFriendRequests(req, res) {
         },
       },
     },
+
     {
       $replaceRoot: { newRoot: "$requestingPersonsInfo" },
+    },
+
+    {
+      $lookup: {
+        from: "users",
+        localField: "mutualFriendsId",
+        foreignField: "_id",
+        as: "mutualFriends",
+      },
     },
     {
       $project: {
@@ -45,26 +55,11 @@ async function getFriendRequests(req, res) {
         lastName: 1,
         online: 1,
         profilePic: 1,
-        mutualFriends: 1,
+        mutualFriends: "$mutualFriends.firstName",
       },
     },
   ]);
-  // const requests = (
-  //   await User.findOne({ username }).select(
-  //     type === "pending" ? { friendRequestsPending: 1 } : { friendRequests: 1 }
-  //   )
-  // )[type === "pending" ? "friendRequestsPending" : "friendRequests"];
 
-  // const promises = requests.map((username) => {
-  //   return User.findOne({ username }).select({
-  //     firstName: 1,
-  //     lastName: 1,
-  //     username: 1,
-  //     profilePic: 1,
-  //     online: 1,
-  //   });
-  // });
-  // const friendRequests = await Promise.all(promises);
   console.log(friendRequests);
   res.json(friendRequests);
 }

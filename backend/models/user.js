@@ -1,22 +1,8 @@
 const mongoose = require("mongoose");
 
-const messageSchema = new mongoose.Schema({
-  from: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now() },
-  seen: { type: Boolean, default: false },
-  text: { type: String },
-  media: {
-    uploading: { type: Boolean },
-    images: [{ type: String }],
-    videos: [{ type: String }],
-    links: [{ type: String }],
-    files: [{ type: String }],
-  },
-});
-
 const conversationSchema = new mongoose.Schema({
   with: { type: String, required: true },
-  messages: [messageSchema],
+  messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
 });
 
 const userSchema = new mongoose.Schema(
@@ -30,10 +16,12 @@ const userSchema = new mongoose.Schema(
     profilePic: { type: String },
     newUser: { type: Boolean, default: true, required: true }, //user just registerd.
     online: { type: Boolean, default: false, required: true },
-    roomsJoined: [{ type: String }],
-    friendList: [{ type: String }],
-    friendRequests: [{ type: String }],
-    friendRequestsPending: [{ type: String }], // friendRequest sent but not accepted yet.
+    roomsJoined: [{ type: mongoose.Schema.Types.ObjectId, ref: "Room" }],
+    friendList: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    friendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    friendRequestsPending: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    ], // friendRequest sent but not accepted yet.
     conversations: [conversationSchema],
   },
   {
@@ -41,6 +29,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("user", userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

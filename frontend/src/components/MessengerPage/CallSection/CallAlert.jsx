@@ -11,7 +11,7 @@ import { Call, CallEnd, Mic, MicOff, VideoCall } from "@material-ui/icons";
 import React, { useEffect, useRef, useState } from "react";
 import { createRef } from "react";
 import Timer from "./CallTimer";
-import Sounds from "./Sounds";
+// import Sounds from "./Sounds";
 import { CALLSTATES } from "."; //STRING CONSTANTS
 
 const useStyles = makeStyles((theme) => ({
@@ -292,7 +292,7 @@ function CallAlert({
       <Box className={classes.call_alert} boxShadow={5} ref={alertRef}>
         {remoteStream && <audio ref={audioRef} autoPlay={true} />}
 
-        <Sounds callState={callState} />
+        {/* <Sounds callState={callState} /> */}
 
         <div className={classes.call_animation}>
           <Avatar

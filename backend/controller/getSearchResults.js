@@ -1,14 +1,14 @@
 const User = require("../models/user");
 
 async function getSearchResults(req, res) {
-  const thisUser = req.verifiedUser.username;
+  const thisUsername = req.verifiedUser.username;
   const emptyString = /^\s+$|^$/gi;
-  //   if (!req.query.search_term.match(emptyString)) {
-  if (true) {
-    thisUserFriendList = (
-      await User.findOne({ username: thisUser }, { _id: 0, friendList: 1 })
-    ).friendList;
-    console.log(thisUserFriendList);
+  if (!req.query.search_term.match(emptyString)) {
+    thisUser = await User.findOne(
+      { username: thisUsername },
+      { friendList: 1 }
+    );
+    const thisUserFriendList = thisUser.friendList;
     const searchTerm = req.query.search_term.split(" ");
     const firstWordRegExp = new RegExp(searchTerm[0], "ig");
     const secondWordRegExp = new RegExp(searchTerm[1], "ig");
@@ -20,6 +20,7 @@ async function getSearchResults(req, res) {
             $match: {
               firstName: firstWordRegExp,
               lastName: secondWordRegExp,
+              username: { $ne: thisUsername },
             },
           },
           {
@@ -29,10 +30,35 @@ async function getSearchResults(req, res) {
               lastName: 1,
               profilePic: 1,
               online: 1,
-              friend: { $in: [thisUser, "$friendList"] },
-              mutualFriends: {
+              isFriend: { $in: [thisUser._id, "$friendList"] },
+              hasSentFriendRequest: {
+                $in: [thisUser._id, "$friendRequestsPending"],
+              },
+              isRequestPending: { $in: [thisUser._id, "$friendRequests"] },
+              mutualFriendsId: {
                 $setIntersection: ["$friendList", thisUserFriendList],
               },
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "mutualFriendsId",
+              foreignField: "_id",
+              as: "mutualFriends",
+            },
+          },
+          {
+            $project: {
+              username: 1,
+              firstName: 1,
+              lastName: 1,
+              online: 1,
+              profilePic: 1,
+              isFriend: 1,
+              hasSentFriendRequest: 1,
+              isRequestPending: 1,
+              mutualFriends: "$mutualFriends.firstName",
             },
           },
         ])
@@ -43,7 +69,7 @@ async function getSearchResults(req, res) {
                 { firstName: firstWordRegExp },
                 { lastName: firstWordRegExp },
               ],
-              username: { $ne: thisUser },
+              username: { $ne: thisUsername },
             },
           },
           {
@@ -53,50 +79,43 @@ async function getSearchResults(req, res) {
               lastName: 1,
               profilePic: 1,
               online: 1,
-              isFriend: { $in: [thisUser, "$friendList"] },
+              isFriend: { $in: [thisUser._id, "$friendList"] },
               hasSentFriendRequest: {
-                $in: [thisUser, "$friendRequestsPending"],
+                $in: [thisUser._id, "$friendRequestsPending"],
               },
-              isRequestPending: { $in: [thisUser, "$friendRequests"] },
-              mutualFriends: {
+              isRequestPending: { $in: [thisUser._id, "$friendRequests"] },
+              mutualFriendsId: {
                 $setIntersection: ["$friendList", thisUserFriendList],
               },
             },
           },
+          {
+            $lookup: {
+              from: "users",
+              localField: "mutualFriendsId",
+              foreignField: "_id",
+              as: "mutualFriends",
+            },
+          },
+          {
+            $project: {
+              username: 1,
+              firstName: 1,
+              lastName: 1,
+              online: 1,
+              profilePic: 1,
+              isFriend: 1,
+              hasSentFriendRequest: 1,
+              isRequestPending: 1,
+              mutualFriends: "$mutualFriends.firstName",
+            },
+          },
         ]);
+
+    console.log(results);
+
     res.json(results);
   }
 }
-
-//this is not used yet but can be used to get the mutual friend information
-
-// async function getMutualFriendInformation(thisUser, otherPerson) {
-//   //match friendList of thisUser and otherPerson
-//   const mutualFriends = await User.aggregate([
-//     {
-//       $match: {
-//         username: { $in: [thisUser, otherPerson] },
-//       },
-//     },
-
-//     {
-//       $group: {
-//         _id: null,
-//         set: { $addToSet: "$friendList" },
-//       },
-//     },
-//     {
-//       $project: {
-//         _id: 0,
-//         mutualFriends: {
-//           $setIntersection: [
-//             { $arrayElemAt: ["$set", 0] },
-//             { $arrayElemAt: ["$set", 1] },
-//           ],
-//         },
-//       },
-//     },
-//   ]);
-// }
 
 module.exports = getSearchResults;

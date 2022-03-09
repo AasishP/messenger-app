@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const colors = require("colors");
 const { usernameSchema, passwordSchema } = require("./inputValidationSchema");
 
 //=========================== authentication with username and password ==================================
@@ -41,13 +40,13 @@ async function verifyUsernameAndPassword(username, password) {
 async function verifyToken(accesstoken) {
   /* This function returns username if token is verified and false otherwise. */
   try {
-    const username = jwt.verify(
+    const verifiedUser = jwt.verify(
       accesstoken,
       process.env.JWT_SECRET_KEY
-    ).username; //Taking the username from the token that we got.
+    );
     //only proceed if the token is valid. i.e if contains username
-    if (username) {
-      const result = await User.findOne({ username: username }).select({
+    if (verifiedUser) {
+      const result = await User.findOne({ username: verifiedUser.username }).select({
         validTokens: 1,
       });
       //checking if the given token exist in the valid token list
@@ -56,7 +55,7 @@ async function verifyToken(accesstoken) {
       });
       //index -1 means doesnot exist
       if (index !== -1 && index !== null && index !== undefined) {
-        return { username };
+        return verifiedUser;
       } else {
         return false;
       }
@@ -77,17 +76,23 @@ async function authenticateUser(req, res, next) {
   const username = req.body.username;
   const password = req.body.password;
 
-  if (accesstoken) {
-    //verify the token
-    const verifiedUser = await verifyToken(accesstoken);
-    verifiedUser && (req.verifiedUser = verifiedUser) && next();
-    !verifiedUser && res.status(401).send("Invalid token!");
-  } else {
-    //verify username and password
-    const verifiedUser = await verifyUsernameAndPassword(username, password); //This checks if the username and password is correct.
-    verifiedUser && res.json({ accesstoken: verifiedUser.accesstoken });
+  try {
+    if (accesstoken) {
+      //verify the token
+      const verifiedUser = await verifyToken(accesstoken);
+      verifiedUser && (req.verifiedUser = verifiedUser) && next();
+      !verifiedUser && res.status(401).send("Invalid token!");
+    } else {
+      //verify username and password
+      const verifiedUser = await verifyUsernameAndPassword(username, password); //This checks if the username and password is correct.
+      verifiedUser && res.json({ accesstoken: verifiedUser.accesstoken });
 
-    !verifiedUser && res.status(401).send("Username or Password is Incorrect!");
+      !verifiedUser &&
+        res.status(401).send("Username or Password is Incorrect!");
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong!");
   }
 }
 //=============================user authentication middleware ends=================================================

@@ -14,6 +14,20 @@ const getMessages = require("../controller/getMessages");
 const getConversations = require("../controller/getConversations");
 const getSearchResults = require("../controller/getSearchResults");
 const route = express.Router();
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const CloudinaryStorage = require("../helpers/cloudinaryStorage");
+const updateMediaMessage = require("../controller/updateMediaMessage");
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  cloudinaryOptions: {
+    resource_type: "auto",
+    upload_preset: "messageMedia",
+  },
+});
+
+const upload = multer({ storage });
 
 //registration endpoint
 route.post("/api/register", createUser);
@@ -30,7 +44,7 @@ route.post("/api/login", authenticateUser, async (req, res) => {
     newUser: 1,
   });
   res.send(result);
-});             
+});
 
 // logout endpoint
 route.delete("/api/logout", authenticateUser, logout);
@@ -58,6 +72,22 @@ route.get("/api/conversations", authenticateUser, getConversations);
 
 //get messages
 route.get("/api/messages/:with", authenticateUser, getMessages);
+
+//upload message medias
+const cpUpload = upload.fields([
+  { name: "images", maxCount: 50 },
+  { name: "videos", maxCount: 50 },
+  { name: "files", maxCount: 50 },
+]);
+
+//send media message using multipart/formdata
+route.post(
+  "/api/sendMediaMessage",
+  authenticateUser,
+  cpUpload,
+  updateMediaMessage
+);
+
 
 //search people
 route.get("/api/:search?", authenticateUser, getSearchResults);

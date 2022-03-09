@@ -1,34 +1,35 @@
 const pushMessageToSenderAndReceiverConversation = require("../../controller/pushMessageToSenderAndReceiverConversation");
-const handleMediaMessage = require("../../controller/handleMediaMessage");
+const Message = require("../../models/message");
+const User = require("../../models/user");
 
 async function handleMessage(msg) {
   const socket = this;
-  const connectedUser = socket.request.verifiedUser.username;
+  const connectedUser = socket.request.verifiedUser;
 
-  //check if message contains any images in media
-  if (msg.media?.image) {
-    handleMediaMessage(msg, connectedUser);
-    return;
-  }
-
-  const message = {
-    from: connectedUser,
-    text:msg.text,
+  //create a new message in message collection
+  const message = await Message.create({
+    from: connectedUser.username,
+    text: msg.text,
     timestamp: new Date(),
-  };
+  });
 
   try {
-    pushMessageToSenderAndReceiverConversation(
-      connectedUser,
+    await pushMessageToSenderAndReceiverConversation(
+      connectedUser.username,
       msg.recipient,
-      msg
+      message._id
     );
+    const recipientId = (
+      await User.findOne({ username: msg.recipient })
+    )._id;
+
+    const roomId = recipientId + 1;
+
+    //send message to receiver
+    socket.to(roomId).emit("receive-message", message);
   } catch (err) {
     socket.send(err);
   }
-
-  //send message to receiver
-  socket.to(msg.recipient).emit("receive-message", message);
 }
 
 module.exports = handleMessage;

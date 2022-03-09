@@ -8,7 +8,7 @@ async function getFriendList(req, res) {
       $lookup: {
         from: "users",
         localField: "friendList",
-        foreignField: "username",
+        foreignField: "_id",
         as: "friendsInfo",
       },
     },
@@ -24,7 +24,7 @@ async function getFriendList(req, res) {
     },
     {
       $addFields: {
-        "friendsInfo.mutualFriends": {
+        "friendsInfo.mutualFriendsId": {
           $setIntersection: ["$friendList", "$friendsInfo.friendList"],
         },
       },
@@ -33,13 +33,21 @@ async function getFriendList(req, res) {
       $replaceRoot: { newRoot: "$friendsInfo" },
     },
     {
+      $lookup: {
+        from: "users",
+        localField: "mutualFriendsId",
+        foreignField: "_id",
+        as: "mutualFriends",
+      },
+    },
+    {
       $project: {
+        username: 1,
         firstName: 1,
         lastName: 1,
-        username: 1,
         online: 1,
         profilePic: 1,
-        mutualFriends: 1,
+        mutualFriends: "$mutualFriends.firstName",
       },
     },
   ]);

@@ -24,7 +24,7 @@ function MessagesContainer({ otherEndUser }) {
   }
 
   async function getMessages(otherSide) {
-    if(!otherSide) return
+    if (!otherSide) return;
     const res = await axios.get(`/messages/${otherSide}`);
     const messages = res.data.messages;
     messages &&
@@ -43,7 +43,7 @@ function MessagesContainer({ otherEndUser }) {
       updateMessages(msg, otherEndUser.username);
     }
 
-    socket.on("receive-message", addMessage);//this will receive msg and pass it into addMessage function
+    socket.on("receive-message", addMessage); //this will receive msg and pass it into addMessage function
 
     return () => {
       socket.off("receive-message", addMessage);
@@ -81,7 +81,7 @@ function MessagesContainer({ otherEndUser }) {
         {messages.map((msg, index) => {
           return (
             <Message
-              key={msg._id || Math.random() * 100000}
+              key={msg._id || msg.tempMsgId}
               msg={msg}
               prevMsgTimestamp={messages[index - 1]?.timestamp || 0}
               otherEndUser={otherEndUser}

@@ -2,105 +2,115 @@ const User = require("../models/user");
 const { usernameSchema } = require("./inputValidationSchema");
 
 async function handleFriendRequest(req, res) {
-  const username = req.body.username;
+  const requestingUsername = req.verifiedUser.username;
+  const requestedUsername = req.body.username;
   const type = req.body.type;
 
   //validating the username
-  if (usernameSchema.test(username)) {
-    try {
+  try {
+    if (usernameSchema.test(requestedUsername)) {
       //checking if the username exists in the database and checking the requesting user and requested user is not same.
       //(i.e. you cannot send friendRequest to yourself)
-      const usernameExists = await User.findOne({ username: username });
-      if (usernameExists && usernameExists !== req.verifiedUser.username) {
+      const [requestingUser, requestedUser] = await Promise.all([
+        User.findOne({ username: requestingUsername }),
+        User.findOne({ username: requestedUsername }),
+      ]);
+
+      if (requestedUser && requestedUser.username !== requestingUser.username) {
         switch (type) {
           case "send":
-            //adding the username to friendRequestsPending of the requesting user.
-            const infriendRequest = Boolean(
-              await User.findOne({
-                username: req.verifiedUser.username,
-                friendRequests: username,
-              })
-            );
-            if (!infriendRequest) {
+            //check if the requested user is already in FriendRequests And FrindList of requesting user
+            const inFriendRequestAndFrindList = await User.exists({
+              username: requestingUser.username,
+              friendRequests: requestedUser._id,
+              friendList: requestedUser._id,
+            });
+
+            //adding the id to friendRequestsPending of the requesting user.
+            if (!inFriendRequestAndFrindList) {
               await User.updateOne(
-                { username: req.verifiedUser.username },
-                { $addToSet: { friendRequestsPending: username } }
+                { username: requestingUser.username },
+                { $addToSet: { friendRequestsPending: requestedUser._id } }
               );
-              //adding the username of the requesting user to the friendRequests list of the requested user.
+              //adding the id of the requesting user to the friendRequests list of the requested user.
               await User.updateOne(
-                { username: username },
-                { $addToSet: { friendRequests: req.verifiedUser.username } }
+                { username: requestedUser.username },
+                { $addToSet: { friendRequests: requestingUser._id } }
               );
             }
             break;
           // and friendRequestsPending list of both the requesting and the requested user.
           case "cancel":
             //cancel sent request
-            //removing the username from the friendRequests list of requested user.
+            //removing the id from the friendRequests list of requested user.
             await User.updateOne(
-              { username: username },
-              { $pull: { friendRequests: req.verifiedUser.username } }
+              { username: requestedUser.username },
+              { $pull: { friendRequests: requestingUser._id } }
             );
-            //removing the username from the friendRequests list of requesting user.
+            //removing the id from the friendRequestsPending list of requesting user.
             await User.updateOne(
-              { username: req.verifiedUser.username },
-              { $pull: { friendRequestsPending: username } }
+              { username: requestingUser.username },
+              { $pull: { friendRequestsPending: requestedUser._id } }
             );
             break;
           case "reject":
             //reject friend request
             //removing the username from the friendRequests list of this user (user that reject the request) .
             await User.updateOne(
-              { username: req.verifiedUser.username },
-              { $pull: { friendRequests: username } }
+              { username: requestingUsername },
+              { $pull: { friendRequests: requestedUser._id } }
             );
             //removing the username from the friendRequestsPending list of requested user (user that sent the friend request).
             await User.updateOne(
-              { username: username },
-              { $pull: { friendRequestsPending: req.verifiedUser.username } }
+              { username: requestedUsername },
+              { $pull: { friendRequestsPending: requestingUser._id } }
             );
             break;
           case "accept":
             //accept friend Request
             //accept the request only if the request exists in the friendRequests list of the accepting user.
 
-            Promise.all([
-              //add the username to the friendList of the accepting user.
-              await User.updateOne(
-                { username: req.verifiedUser.username, friendRequests: username },
-                { $addToSet: { friendList: username } }
+            await Promise.all([
+              //add the otheruser to the friendList of the accepting user.
+              //remove the otheruser from the friendRequests list of the accepting user.
+              User.updateOne(
+                {
+                  username: requestingUsername,
+                  friendRequests: requestedUser._id,
+                },
+                {
+                  $addToSet: { friendList: requestedUser._id },
+                  $pull: { friendRequests: requestedUser._id },
+                }
               ),
+
               //adding the accepting user to the friendList of the requesting user
-              await User.updateOne(
-                { username: username, friendRequestsPending: req.verifiedUser.username },
-                { $addToSet: { friendList: req.verifiedUser.username } }
+              //remove the accepting user from the friendRequestsPending list of the requesting user.
+              User.updateOne(
+                {
+                  username: requestedUsername,
+                  friendRequestsPending: requestingUser._id,
+                },
+                {
+                  $addToSet: { friendList: requestingUser._id },
+                  $pull: { friendRequestsPending: requestingUser._id },
+                }
               ),
-            ]).then(async () => {
-              //after both users have each other in their friendList the request and the pending request are removed.
-
-              //removing the requested user from the friendRequestsPending list of requesting user.
-              await User.updateOne(
-                { username: username },
-                { $pull: { friendRequestsPending: req.verifiedUser.username } }
-              );
-              //removing the requesting user from the friendRequests list of requested user.
-              await User.updateOne(
-                { username: req.verifiedUser.username },
-                { $pull: { friendRequests: username } }
-              );
-            });
-
+            ]);
             break;
+
           case "unfriend":
             //unfriending i.e removing the each other from the friend list.
-            await User.updateOne(
-              { username: req.verifiedUser.username },
-              { $pull: { friendList: username } }
-            );
-            await User.updateOne(
-              { username: username },
-              { $pull: { friendRequests: req.verifiedUser.username } }
-            );
+            await Promise.all([
+              User.updateOne(
+                { username: requestingUsername },
+                { $pull: { friendList: requestedUser._id } }
+              ),
+              User.updateOne(
+                { username: requestedUsername },
+                { $pull: { friendList: requestingUser._id } }
+              ),
+            ]);
             break;
 
           default:
@@ -118,18 +128,18 @@ async function handleFriendRequest(req, res) {
         //if username passed doesnot exist in the database.
         res.status(406).send("invalid username!");
       }
-    } catch (err) {
-      //if error occurs in handling the request
-      console.log(err);
-      res.status(500).send();
+    } else {
+      //if username is missing or invalid
+      res
+        .status(400)
+        .send(
+          "missing or invalid username passed.\n set key 'username':'username of the requested user' "
+        );
     }
-  } else {
-    //if username is missing or invalid
-    res
-      .status(400)
-      .send(
-        "missing or invalid username passed.\n set key 'username':'username of the requested user' "
-      );
+  } catch (err) {
+    //if error occurs in handling the request
+    console.log(err);
+    res.status(500).send();
   }
 }
 

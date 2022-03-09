@@ -85,7 +85,7 @@ function CallSection() {
       })
       .catch((err) => {
         setCallState(CALLSTATES.CALLFAILED);
-        console.error("Failed to get local stream", err);
+        console.error("Failed to get local stream 1", err);
       });
   }, []);
 
@@ -105,12 +105,13 @@ function CallSection() {
       })
       .catch((err) => {
         setCallState(CALLSTATES.CALLFAILED);
-        console.error("Failed to get local stream", err);
+        console.error("Failed to get local stream 2", err);
       });
   }, []);
 
   const handleCall = useCallback(
     (e) => {
+      console.log(e);
       const callDirection = e.detail
         ? CALLDIRECTION.OUTGOING
         : CALLDIRECTION.INCOMING;
@@ -133,6 +134,7 @@ function CallSection() {
                 receiver === userInfo.username &&
                 ackCallType === callType
               ) {
+                console.log("call acknowledgement");
                 setCallState(CALLSTATES.CONNECTED); //play call connected sound in CallAlert component
                 call(peer, remotePeerId, callType);
               }
@@ -173,8 +175,8 @@ function CallSection() {
     function () {
       if (this !== socket) {
         callState === CALLSTATES.RINGING
-          ? socket.emit("callRejected", callingUser.username)
-          : socket.emit("callEnd", callingUser.username);
+          ? socket.emit("callRejected", callingUser)
+          : socket.emit("callEnd", callingUser);
       } //if it is called by socket.on() no need to emit. This happens when otherEnd ends the call. So no need to tell otherEnd the call has ended.
       setCallState(CALLSTATES.HANGUP);
       stopStreams();
@@ -196,9 +198,9 @@ function CallSection() {
       //for noAnswer
       case CALLSTATES.RINGING:
         var noAnswerTimeOut = setTimeout(() => {
-          socket.emit("noAnswer", callingUser.username);
+          socket.emit("noAnswer", callingUser);
           resetStates();
-        }, 3000);
+        }, 10000);
         break;
       case CALLSTATES.NOANSWER:
       case CALLSTATES.BUSY:
@@ -237,7 +239,7 @@ function CallSection() {
       socket.off("incomingCall", handleCall);
       socket.off("callEnd", endCall);
     };
-  }, [socket,callingUser, handleCall, endCall]);
+  }, [socket, callingUser, handleCall, endCall]);
 
   return (
     <>

@@ -10,11 +10,12 @@ import LoggedInUserContext from "../../context/LoggedInUserContext";
 import { Route } from "react-router";
 import CallSection from "./CallSection";
 
-const socket = io(config.wsAddress, {
-  auth: { token: localStorage.getItem("accesstoken") },
-});
-
 function MessengerPage({ user }) {
+  //setting up socket
+  const socket = io(config.wsAddress, {
+    auth: { token: localStorage.getItem("accesstoken") },
+  });
+
   const theme = useTheme();
   const [showChangeProfilePicture, setShowChangeProfilePicture] =
     useState(false);
@@ -22,15 +23,19 @@ function MessengerPage({ user }) {
   const notMediumScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
-    socket.on("success", (msg) => {
-      console.log(msg);
+    socket.on("connect", () => {
+      console.log("socket connected");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("socket disconnected!");
     });
 
     //clean up
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [socket]);
 
   const [LoggedInUser, setLoggedInUser] = useState(user);
   const value = { LoggedInUser, setLoggedInUser };

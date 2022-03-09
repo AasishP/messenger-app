@@ -1,13 +1,17 @@
 const User = require("../models/user");
 
-async function updateUserOnlineState(socket, username, state) {
-  await User.updateOne({ username }, { $set: { online: state } });
+async function updateUserOnlineState(socket, state) {
+  const connectedUser = socket.request.verifiedUser;
+
   const friendList = (
-    await User.findOne({ username }).select({ friendList: 1 })
+    await User.findOneAndUpdate(
+      { username: connectedUser.username },
+      { $set: { online: state } }
+    ).select({ friendList: 1 })
   ).friendList;
+
   friendList.forEach((user) => {
-    socket.to(user).emit("onlineStateChange", username, state);
-    console.log(user + " informed " + state);
+    socket.to(user+1).emit("onlineStateChange", connectedUser.username, state);
   });
 }
 module.exports = updateUserOnlineState;

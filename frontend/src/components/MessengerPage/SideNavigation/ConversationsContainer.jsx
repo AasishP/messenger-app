@@ -1,9 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "../../../api";
 import axiosMain from "axios";
 import Conversation from "./Conversation";
+import SocketContext from "../../../context/SocketContext";
+
+async function getConversations(source) {
+  const res = await axios.get(`/conversations`, {
+    cancelToken: source?.token,
+  });
+  return res.data;
+}
 
 function ConversationsContainer() {
+  //contexts
+  const socket = useContext(SocketContext);
+
   //states
   const [conversations, setConversations] = useState([]);
 
@@ -16,7 +27,14 @@ function ConversationsContainer() {
 
   function moveRecentConversationToTop(msg) {
     const message = msg.detail ? msg.detail : msg;
+
     setConversations((prevConversations) => {
+      if (prevConversations.length === 0) {
+        getConversations().then((conversations) => {
+          setConversations(conversations);
+        });
+        return [];
+      }
       const index = prevConversations.findIndex((conversation) => {
         if (conversation?.with === message.recipient) {
           return true;
@@ -29,27 +47,25 @@ function ConversationsContainer() {
     });
   }
 
-  async function getConversations(source) {
-    axios
-      .get(`/conversations`, {
-        cancelToken: source.token,
-      })
-      .then((res) => {
-        setConversations(res.data);
-      });
-  }
-
   useEffect(() => {
     const CancelToken = axiosMain.CancelToken; //axiosMain is axios
     const source = CancelToken.source();
-    getConversations(source);
+
+    getConversations(source).then((conversations) => {
+      setConversations(conversations);
+    });
+
     onMessageSend(moveRecentConversationToTop);
+
+    socket.on("receive-message", moveRecentConversationToTop);
+
     return () => {
       // Cancel request
       source.cancel();
       offMessageSend(moveRecentConversationToTop);
+      socket.off("receive-message", moveRecentConversationToTop);
     };
-  }, []);
+  }, [socket]);
 
   return (
     <div

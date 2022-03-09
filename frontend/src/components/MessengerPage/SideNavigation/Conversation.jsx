@@ -216,9 +216,9 @@ function Conversation({ lastMessage, conversationWith }) {
 
           {/*message text */}
           {recentMessage.text ||
-            ((recentMessage.media.images.length ||
-              recentMessage.media.videos.length ||
-              recentMessage.media.files.length) &&
+            ((recentMessage.media.images.length >0||
+              recentMessage.media.videos.length >0||
+              recentMessage.media.files.length>0) &&
               "sent an attatchment!")}
         </Typography>
       </Box>
