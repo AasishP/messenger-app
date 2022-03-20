@@ -1,5 +1,6 @@
 {
   "name": "messenger-app",
+  "homepage": "http://gitname.github.io/messenger-app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -24,14 +25,13 @@
     "web-vitals": "^1.1.2",
     "yup": "^0.32.9"
   },
-  "main": "electron/main.js",
-  "homepage": "./",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron": "electron ."
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
