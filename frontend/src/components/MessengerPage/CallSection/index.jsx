@@ -66,14 +66,14 @@ function CallSection() {
     setCallStartedTime();
   };
 
-  const call = useCallback((peer, peerId, callType) => {
+  const call = (peer, remotePeerId, callType) => {
     //call acknowledgement is received form the otherEnd.
     navigator.mediaDevices
       .getUserMedia({ video: callType === CALLTYPE.VIDEOCALL, audio: true })
       .then((stream) => {
         setLocalStream(stream);
         setShowVideoScreen(callType === CALLTYPE.VIDEOCALL);
-        const call = peer.call(peerId, stream);
+        const call = peer.call(remotePeerId, stream);
         setCallState(CALLSTATES.CALLING); //play calling tone in CallAlert component
         call.on("stream", (remoteStream) => {
           //call is accepted by otherEnd
@@ -85,11 +85,11 @@ function CallSection() {
       })
       .catch((err) => {
         setCallState(CALLSTATES.CALLFAILED);
-        console.error("Failed to get local stream 1", err);
+        console.error("Failed to get local stream", err);
       });
-  }, []);
+  };
 
-  const acceptCall = useCallback((call, callType) => {
+  const acceptCall = (call, callType) => {
     navigator.mediaDevices
       .getUserMedia({ video: callType === CALLTYPE.VIDEOCALL, audio: true })
       .then((stream) => {
@@ -105,13 +105,12 @@ function CallSection() {
       })
       .catch((err) => {
         setCallState(CALLSTATES.CALLFAILED);
-        console.error("Failed to get local stream 2", err);
+        console.error("Failed to get local stream", err);
       });
-  }, []);
+  };
 
   const handleCall = useCallback(
     (e) => {
-      console.log(e);
       const callDirection = e.detail
         ? CALLDIRECTION.OUTGOING
         : CALLDIRECTION.INCOMING;
@@ -134,7 +133,6 @@ function CallSection() {
                 receiver === userInfo.username &&
                 ackCallType === callType
               ) {
-                console.log("call acknowledgement");
                 setCallState(CALLSTATES.CONNECTED); //play call connected sound in CallAlert component
                 call(peer, remotePeerId, callType);
               }
@@ -156,13 +154,13 @@ function CallSection() {
       function callHandler(call) {
         setCallState(CALLSTATES.RINGING); //play ringtone
         document.addEventListener("callAccepted", () => {
-          acceptCall(peer, call, callType);
+          acceptCall(call, callType);
         });
       }
       //answer call
       peer.on("call", callHandler);
     },
-    [socket, LoggedInUser, acceptCall, call]
+    [socket, LoggedInUser]
   );
 
   //stopping the mic and camera streams.

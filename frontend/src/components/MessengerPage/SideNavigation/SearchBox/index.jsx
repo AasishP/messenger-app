@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, IconButton, makeStyles } from "@material-ui/core";
 import SearchResults from "./SearchResults";
 import { Search } from "@material-ui/icons";
@@ -30,6 +30,8 @@ function SearchBox() {
   const classes = useStyles();
   const [searchText, setSearchText] = useState();
   const [showSearchResults, setShowSearchResults] = useState(false);
+  //refs
+  const searchBoxRef = useRef();
 
   function handleChange(e) {
     setSearchText(e.target.value);
@@ -40,9 +42,21 @@ function SearchBox() {
     searchText && setShowSearchResults(true);
   }
 
+  function handleClickOutside(e) {
+    if (searchBoxRef.current && !searchBoxRef.current.contains(e.target))
+      setShowSearchResults(false);
+  }
+
   useEffect(() => {
     searchText ? setShowSearchResults(true) : setShowSearchResults(false);
   }, [searchText]);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -54,6 +68,7 @@ function SearchBox() {
         onFocus={() => {
           searchText && !showSearchResults && setShowSearchResults(true);
         }}
+        ref={searchBoxRef}
       >
         <form className={classes.searchForm} onSubmit={handleSubmit}>
           <input

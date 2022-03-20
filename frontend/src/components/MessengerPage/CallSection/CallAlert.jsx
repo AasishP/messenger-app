@@ -13,6 +13,7 @@ import { createRef } from "react";
 import Timer from "./CallTimer";
 // import Sounds from "./Sounds";
 import { CALLSTATES } from "."; //STRING CONSTANTS
+import useCallSounds from "./useCallSounds";
 
 const useStyles = makeStyles((theme) => ({
   call_alert: {
@@ -93,6 +94,7 @@ const useButtonStyles = makeStyles((theme) => ({
 
 function CallStatus({ callState, callStartedTime }) {
   const theme = useTheme();
+
   const getTextColor = () => {
     switch (callState) {
       case CALLSTATES.CALLFAILED:
@@ -112,7 +114,6 @@ function CallStatus({ callState, callStartedTime }) {
       style={{ color: getTextColor() || theme.palette.text.secondary }}
       variant="body1"
     >
-      {console.log(callState)}
       {
         {
           connecting: "connecting. . .",
@@ -274,6 +275,9 @@ function CallAlert({
   //states
   const [muted, setMuted] = useState(false);
 
+  // call Sounds
+  useCallSounds(callState);
+
   useEffect(() => {
     if (localStream) {
       localStream.getAudioTracks().forEach((track) => (track.enabled = !muted)); //toggle mic
@@ -292,7 +296,7 @@ function CallAlert({
       <Box className={classes.call_alert} boxShadow={5} ref={alertRef}>
         {remoteStream && <audio ref={audioRef} autoPlay={true} />}
 
-        {/* <Sounds callState={callState} /> */}
+        {/* <CallSounds callState={callState} /> */}
 
         <div className={classes.call_animation}>
           <Avatar
