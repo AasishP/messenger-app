@@ -4,12 +4,10 @@ import {
   Box,
   IconButton,
   makeStyles,
-  Menu,
-  MenuItem,
   Typography,
 } from "@material-ui/core";
 import { StyledBadge } from "../SideNavigation/Conversation";
-import { MoreVert, Phone, VideoCall } from "@material-ui/icons";
+import { Phone, VideoCall } from "@material-ui/icons";
 import { useState } from "react";
 import SocketContext from "../../../context/SocketContext";
 
@@ -45,11 +43,6 @@ function Header({ userInfo }) {
 
   //states
   const [online, setOnline] = useState(userInfo.online);
-  const [anchorEl, setAnchorEl] = useState(null); //for menu
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
 
   useEffect(() => {
     //updateOnlineState
@@ -124,7 +117,7 @@ function Header({ userInfo }) {
         </IconButton>
 
         {/* menu btn */}
-        <IconButton
+        {/* <IconButton
           className={classes.buttonIcon}
           aria-controls="header-menu"
           aria-haspopup="true"
@@ -145,7 +138,7 @@ function Header({ userInfo }) {
           <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
           <MenuItem onClick={handleMenuClose}>My account</MenuItem>
           <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
-        </Menu>
+        </Menu> */}
       </Box>
     </Box>
   );
