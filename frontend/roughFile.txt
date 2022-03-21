@@ -1,4 +1,0 @@
-call types
-1.incomingAudioCall
-2.incomingVideoCall
-3.

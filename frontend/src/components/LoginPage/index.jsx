@@ -50,7 +50,7 @@ function LoginPage() {
       height="100vh"
       width="100vw"
     >
-      <Route exact path="/">
+      <Route path="/">
         <Redirect
           to={{
             pathname: "/login",
