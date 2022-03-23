@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "./static/css/main.ec6525c1.chunk.css",
-    "main.js": "./static/js/main.94c63d64.chunk.js",
-    "main.js.map": "./static/js/main.94c63d64.chunk.js.map",
+    "main.js": "./static/js/main.fae653ce.chunk.js",
+    "main.js.map": "./static/js/main.fae653ce.chunk.js.map",
     "runtime-main.js": "./static/js/runtime-main.ebe19ab0.js",
     "runtime-main.js.map": "./static/js/runtime-main.ebe19ab0.js.map",
     "static/js/2.ae77d0f5.chunk.js": "./static/js/2.ae77d0f5.chunk.js",
@@ -10,20 +10,12 @@
     "index.html": "./index.html",
     "static/css/main.ec6525c1.chunk.css.map": "./static/css/main.ec6525c1.chunk.css.map",
     "static/js/2.ae77d0f5.chunk.js.LICENSE.txt": "./static/js/2.ae77d0f5.chunk.js.LICENSE.txt",
-    "static/media/callFailed.11708baa.mp3": "./static/media/callFailed.11708baa.mp3",
-    "static/media/calling.60d66047.mp3": "./static/media/calling.60d66047.mp3",
-    "static/media/connected.2638f3bf.mp3": "./static/media/connected.2638f3bf.mp3",
-    "static/media/connecting.bbd9a0bf.mp3": "./static/media/connecting.bbd9a0bf.mp3",
-    "static/media/connectionLost.11708baa.mp3": "./static/media/connectionLost.11708baa.mp3",
-    "static/media/hangup.abe2a5aa.mp3": "./static/media/hangup.abe2a5aa.mp3",
-    "static/media/loginPageBackground.566fa2ff.svg": "./static/media/loginPageBackground.566fa2ff.svg",
-    "static/media/reconnecting.bbd9a0bf.mp3": "./static/media/reconnecting.bbd9a0bf.mp3",
-    "static/media/ringing.6cf9231c.mp3": "./static/media/ringing.6cf9231c.mp3"
+    "static/media/loginPageBackground.566fa2ff.svg": "./static/media/loginPageBackground.566fa2ff.svg"
   },
   "entrypoints": [
     "static/js/runtime-main.ebe19ab0.js",
     "static/js/2.ae77d0f5.chunk.js",
     "static/css/main.ec6525c1.chunk.css",
-    "static/js/main.94c63d64.chunk.js"
+    "static/js/main.fae653ce.chunk.js"
   ]
 }
