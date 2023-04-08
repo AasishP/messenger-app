@@ -4,8 +4,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const connectDB = require("./database/connection");
 
-//we dont need this in production
-require("dotenv").config(); //loading environment variables
+require("dotenv").config();
 
 const app = express();
 
@@ -25,7 +24,7 @@ const PORT = process.env.PORT || 5000;
 //database connection
 connectDB();
 
-//middewares
+//middlewares
 app.use(morgan("tiny")); //logs the requests
 app.use(express.json({ limit: "10MB" }));
 app.use(express.urlencoded({ limit: "10MB", extended: true }));
